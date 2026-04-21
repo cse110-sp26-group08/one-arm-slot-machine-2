@@ -230,6 +230,26 @@
   color: #fff6dc;
 }
 
+.betControl {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.betStepper {
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgba(255, 224, 138, 0.22);
+  background: rgba(255, 245, 216, 0.06);
+  color: #fff4d5;
+  cursor: pointer;
+}
+
+.betStepper:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
 .spinButton {
   min-height: 64px;
   border: 0;
@@ -267,13 +287,17 @@
 }
 
 .spinButton,
-.exitButton {
+.exitButton,
+.betStepper,
+.celebrationButton {
   cursor: pointer;
   transition: transform 160ms ease, box-shadow 160ms ease;
 }
 
 .spinButton:hover,
-.exitButton:hover {
+.exitButton:hover,
+.betStepper:hover,
+.celebrationButton:hover {
   transform: translateY(-1px);
 }
 

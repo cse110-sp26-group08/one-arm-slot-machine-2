@@ -6,7 +6,13 @@ import { SlotMachineStats } from '../components/home/SlotMachineStats.js';
 import { WinCelebration } from '../components/home/WinCelebration.js';
 import { classicGoldTheme } from '../components/home/slot-theme.js';
 import { playWinJingle } from '../services/celebration-audio.js';
-import { fetchSlotMachineState, spinSlotMachine, type SlotMachineState, type SlotSymbol } from '../services/slot-machine-client.js';
+import {
+  fetchSlotMachineState,
+  spinSlotMachine,
+  updateSlotMachineBetAmount,
+  type SlotMachineState,
+  type SlotSymbol
+} from '../services/slot-machine-client.js';
 import type { AuthenticatedUser } from '../services/auth-client.js';
 import styles from './HomePage.module.css';
 
@@ -29,6 +35,7 @@ export function HomePage({ onLogout, user }: HomePageProps) {
   const [slotMachineState, setSlotMachineState] = useState<SlotMachineState | null>(null);
   const [displayedGrid, setDisplayedGrid] = useState<SlotMachineState['grid'] | null>(null);
   const [isSpinning, setIsSpinning] = useState(false);
+  const [isUpdatingBet, setIsUpdatingBet] = useState(false);
   const [statusMessage, setStatusMessage] = useState('No scroll, five paylines, and a bright center spin button ready to go.');
   const [isCelebratingWin, setIsCelebratingWin] = useState(false);
   const [winAnnouncement, setWinAnnouncement] = useState('');
@@ -65,38 +72,66 @@ export function HomePage({ onLogout, user }: HomePageProps) {
     dismissCelebration();
     setIsSpinning(true);
     setStatusMessage('Reels are spinning. They will stop from left to right to build tension.');
-
     const previewInterval = window.setInterval(() => {
       setDisplayedGrid(createPreviewGrid());
     }, 90);
-    const nextState = await spinSlotMachine();
 
-    window.clearInterval(previewInterval);
+    try {
+      const nextState = await spinSlotMachine();
 
-    for (let columnIndex = 0; columnIndex < nextState.grid[0].length; columnIndex += 1) {
-      await pause(revealDelayInMilliseconds);
-      setDisplayedGrid((currentGrid) => replaceGridColumn(currentGrid ?? nextState.grid, nextState.grid, columnIndex));
-    }
+      window.clearInterval(previewInterval);
 
-    setSlotMachineState(nextState);
-    setDisplayedGrid(nextState.grid);
-    setIsSpinning(false);
-    setStatusMessage(resolveOutcomeMessage(nextState));
-
-    if (nextState.outcome === 'win') {
-      const announcement = getWinAnnouncement(nextState);
-      setWinAnnouncement(announcement);
-      setIsCelebratingWin(true);
-      void playWinJingle();
-
-      if (celebrationTimeoutRef.current) {
-        window.clearTimeout(celebrationTimeoutRef.current);
+      for (let columnIndex = 0; columnIndex < nextState.grid[0].length; columnIndex += 1) {
+        await pause(revealDelayInMilliseconds);
+        setDisplayedGrid((currentGrid) => replaceGridColumn(currentGrid ?? nextState.grid, nextState.grid, columnIndex));
       }
 
-      celebrationTimeoutRef.current = window.setTimeout(() => {
-        celebrationTimeoutRef.current = null;
-        setIsCelebratingWin(false);
-      }, celebrationDurationInMilliseconds);
+      setSlotMachineState(nextState);
+      setDisplayedGrid(nextState.grid);
+      setStatusMessage(resolveOutcomeMessage(nextState));
+
+      if (nextState.outcome === 'win') {
+        const announcement = getWinAnnouncement(nextState);
+        setWinAnnouncement(announcement);
+        setIsCelebratingWin(true);
+        void playWinJingle();
+
+        if (celebrationTimeoutRef.current) {
+          window.clearTimeout(celebrationTimeoutRef.current);
+        }
+
+        celebrationTimeoutRef.current = window.setTimeout(() => {
+          celebrationTimeoutRef.current = null;
+          setIsCelebratingWin(false);
+        }, celebrationDurationInMilliseconds);
+      }
+    } catch (error) {
+      setStatusMessage(resolveActionErrorMessage(error, 'Spin could not start.'));
+      await hydrateSlotMachineState();
+    } finally {
+      window.clearInterval(previewInterval);
+      setIsSpinning(false);
+    }
+  }
+
+  async function handleBetAmountChange(nextBetAmount: number) {
+    if (!slotMachineState || isSpinning || isUpdatingBet) {
+      return;
+    }
+
+    setIsUpdatingBet(true);
+
+    try {
+      const nextState = await updateSlotMachineBetAmount(nextBetAmount);
+      setSlotMachineState(nextState);
+      setStatusMessage(
+        `Bet updated to ${nextState.stats.currentBetAmount}. Balance available: ${nextState.stats.totalBalance}.`
+      );
+    } catch (error) {
+      setStatusMessage(resolveActionErrorMessage(error, 'Bet amount was not updated.'));
+      await hydrateSlotMachineState();
+    } finally {
+      setIsUpdatingBet(false);
     }
   }
 
@@ -126,7 +161,9 @@ export function HomePage({ onLogout, user }: HomePageProps) {
         theme={classicGoldTheme}
       />
       <SlotMachineStats
+        isUpdatingBet={isUpdatingBet}
         isSpinning={isSpinning}
+        onBetAmountChange={handleBetAmountChange}
         onLogout={onLogout}
         onSpin={handleSpin}
         slotMachineState={slotMachineState}
@@ -199,6 +236,17 @@ function pause(durationInMilliseconds: number) {
   return new Promise<void>((resolve) => {
     window.setTimeout(resolve, durationInMilliseconds);
   });
+}
+
+/**
+ * Extracts a readable message from failed frontend slot-machine actions.
+ *
+ * @param {unknown} error - Thrown error value.
+ * @param {string} fallbackMessage - Message to use when the error is not readable.
+ * @returns {string} Player-facing error copy.
+ */
+function resolveActionErrorMessage(error: unknown, fallbackMessage: string) {
+  return error instanceof Error ? error.message : fallbackMessage;
 }
 
 /**

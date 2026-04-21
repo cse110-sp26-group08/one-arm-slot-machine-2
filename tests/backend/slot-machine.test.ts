@@ -5,11 +5,14 @@ import {
   DEFAULT_BET_AMOUNT,
   SLOT_MACHINE_COLUMNS,
   SLOT_MACHINE_ROWS,
+  DEFAULT_BALANCE,
+  SlotMachineStateError,
   calculatePayout,
   createInitialSlotMachineState,
   createRandomGrid,
   evaluateSpin,
   getSlotMachineState,
+  setSlotMachineBetAmount,
   spinSlotMachine
 } from '../../backend/services/slot-machine.service.js';
 
@@ -79,4 +82,33 @@ test('spinSlotMachine updates spins and keeps session state per player', () => {
   assert.equal(initialState.stats.numberOfSpins, 0);
   assert.equal(spunState.stats.numberOfSpins, 1);
   assert.equal(getSlotMachineState('player-1').stats.numberOfSpins, 1);
+});
+
+test('setSlotMachineBetAmount updates the tracked bet when it fits within balance', () => {
+  const updatedState = setSlotMachineBetAmount('player-bet-ok', 40);
+
+  assert.equal(updatedState.stats.currentBetAmount, 40);
+  assert.equal(getSlotMachineState('player-bet-ok').stats.currentBetAmount, 40);
+});
+
+test('setSlotMachineBetAmount rejects bets that exceed the available balance', () => {
+  assert.throws(
+    () => setSlotMachineBetAmount('player-bet-too-high', DEFAULT_BALANCE + 1),
+    (error: unknown) =>
+      error instanceof SlotMachineStateError &&
+      error.message === 'Bet amount cannot exceed the available balance.'
+  );
+});
+
+test('spinSlotMachine rejects a spin when the current bet is higher than the balance', () => {
+  const trackedState = getSlotMachineState('player-cannot-spin');
+  trackedState.stats.totalBalance = 10;
+  trackedState.stats.currentBetAmount = 25;
+
+  assert.throws(
+    () => spinSlotMachine('player-cannot-spin'),
+    (error: unknown) =>
+      error instanceof SlotMachineStateError &&
+      error.message === 'Current bet exceeds the remaining balance.'
+  );
 });

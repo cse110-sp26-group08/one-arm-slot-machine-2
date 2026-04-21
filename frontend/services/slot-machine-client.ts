@@ -54,6 +54,19 @@ export async function spinSlotMachine() {
 }
 
 /**
+ * Updates the current bet amount for the authenticated user.
+ *
+ * @param {number} betAmount - Requested next bet amount.
+ * @returns {Promise<SlotMachineState>} Updated slot-machine state.
+ */
+export async function updateSlotMachineBetAmount(betAmount: number) {
+  return sendAuthenticatedSlotMachineRequest<SlotMachineState>('/bet', {
+    method: 'POST',
+    body: JSON.stringify({ betAmount })
+  });
+}
+
+/**
  * Sends an authenticated request to the slot-machine API.
  *
  * @template ResponseBody

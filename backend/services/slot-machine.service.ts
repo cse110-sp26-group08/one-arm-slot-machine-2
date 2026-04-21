@@ -57,6 +57,8 @@ export interface SlotMachineState {
 
 const slotMachineStateByPlayer = new Map<string, SlotMachineState>();
 
+export class SlotMachineStateError extends Error {}
+
 /**
  * Returns the current slot-machine state for a player, creating one if needed.
  *
@@ -84,6 +86,11 @@ export function getSlotMachineState(playerId: string) {
  */
 export function spinSlotMachine(playerId: string) {
   const currentState = getSlotMachineState(playerId);
+
+  if (currentState.stats.currentBetAmount > currentState.stats.totalBalance) {
+    throw new SlotMachineStateError('Current bet exceeds the remaining balance.');
+  }
+
   const spunGrid = createRandomGrid();
   const evaluatedSpin = evaluateSpin(spunGrid, currentState.stats.currentBetAmount);
   const updatedState: SlotMachineState = {
@@ -99,6 +106,36 @@ export function spinSlotMachine(playerId: string) {
         evaluatedSpin.payout
     },
     winningLines: evaluatedSpin.winningLines
+  };
+
+  slotMachineStateByPlayer.set(playerId, updatedState);
+  return updatedState;
+}
+
+/**
+ * Updates the player's current bet amount while keeping it within the available balance.
+ *
+ * @param {string} playerId - Unique session or user identifier.
+ * @param {number} nextBetAmount - Requested next bet amount.
+ * @returns {SlotMachineState} Updated slot-machine state with the new bet amount.
+ */
+export function setSlotMachineBetAmount(playerId: string, nextBetAmount: number) {
+  const currentState = getSlotMachineState(playerId);
+
+  if (!Number.isInteger(nextBetAmount) || nextBetAmount <= 0) {
+    throw new SlotMachineStateError('Bet amount must be a positive whole number.');
+  }
+
+  if (nextBetAmount > currentState.stats.totalBalance) {
+    throw new SlotMachineStateError('Bet amount cannot exceed the available balance.');
+  }
+
+  const updatedState: SlotMachineState = {
+    ...currentState,
+    stats: {
+      ...currentState.stats,
+      currentBetAmount: nextBetAmount
+    }
   };
 
   slotMachineStateByPlayer.set(playerId, updatedState);

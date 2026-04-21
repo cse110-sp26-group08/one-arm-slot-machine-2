@@ -2,7 +2,9 @@ import styles from '../../pages/HomePage.module.css';
 import type { SlotMachineState } from '../../services/slot-machine-client.js';
 
 interface SlotMachineStatsProps {
+  isUpdatingBet: boolean;
   isSpinning: boolean;
+  onBetAmountChange: (nextBetAmount: number) => void | Promise<void>;
   onLogout: () => void;
   onSpin: () => void | Promise<void>;
   statusMessage: string;
@@ -17,13 +19,26 @@ interface SlotMachineStatsProps {
  * @returns {JSX.Element} Stats and controls UI.
  */
 export function SlotMachineStats({
+  isUpdatingBet,
   isSpinning,
+  onBetAmountChange,
   onLogout,
   onSpin,
   statusMessage,
   slotMachineState,
   userDisplayName
 }: SlotMachineStatsProps) {
+  const canIncreaseBet =
+    !isSpinning &&
+    !isUpdatingBet &&
+    slotMachineState.stats.currentBetAmount < slotMachineState.stats.totalBalance;
+  const canDecreaseBet =
+    !isSpinning && !isUpdatingBet && slotMachineState.stats.currentBetAmount > 1;
+  const canSpin =
+    !isSpinning &&
+    !isUpdatingBet &&
+    slotMachineState.stats.currentBetAmount <= slotMachineState.stats.totalBalance;
+
   return (
     <section className={styles.statsBar}>
       <div className={styles.statsColumn}>
@@ -36,7 +51,7 @@ export function SlotMachineStats({
       </div>
       <button
         className={`${styles.spinButton} ${isSpinning ? styles.spinButtonBusy : ''}`}
-        disabled={isSpinning}
+        disabled={!canSpin}
         onClick={() => void onSpin()}
         type="button"
       >
@@ -44,7 +59,25 @@ export function SlotMachineStats({
       </button>
       <div className={styles.statsColumn}>
         <span className={styles.statsLabel}>Current bet</span>
-        <strong className={styles.statsValue}>{slotMachineState.stats.currentBetAmount}</strong>
+        <div className={styles.betControl}>
+          <button
+            className={styles.betStepper}
+            disabled={!canDecreaseBet}
+            onClick={() => void onBetAmountChange(slotMachineState.stats.currentBetAmount - 1)}
+            type="button"
+          >
+            -
+          </button>
+          <strong className={styles.statsValue}>{slotMachineState.stats.currentBetAmount}</strong>
+          <button
+            className={styles.betStepper}
+            disabled={!canIncreaseBet}
+            onClick={() => void onBetAmountChange(slotMachineState.stats.currentBetAmount + 1)}
+            type="button"
+          >
+            +
+          </button>
+        </div>
       </div>
       <div className={styles.statsColumn}>
         <span className={styles.statsLabel}>Number of spins</span>
