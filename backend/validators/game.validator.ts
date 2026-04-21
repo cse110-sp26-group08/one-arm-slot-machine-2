@@ -118,5 +118,5 @@ function isNumber(value: unknown) {
  * @returns {boolean} True when the value is a non-negative finite number.
  */
 function isNonNegativeNumber(value: unknown) {
-  return isNumber(value) && value >= 0;
+  return typeof value === 'number' && Number.isFinite(value) && value >= 0;
 }

@@ -1,4 +1,8 @@
 import express from 'express';
+import { accountDataRouter } from './routes/account-data.routes.js';
+import { friendsRouter } from './routes/friends.routes.js';
+import { gameRouter } from './routes/game.routes.js';
+import { userRouter } from './routes/user.routes.js';
 
 export { connectToDatabase, disconnectFromDatabase } from './config/database.js';
 export {
