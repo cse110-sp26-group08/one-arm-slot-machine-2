@@ -1,32 +1,57 @@
-# Research Summary:
+# Research Summary
 
-## Summary of what each member did
+## Structural Overview of Summaries
 
-### Himir
+### Frontend Summary
 
-### Matthew Bozoukov
+[Detailed frontend summary (click)](./raw-research/frontend/summary.md)
 
-I primarily worked on figuring out the user experince side of the slot machine. This includes figuring out how to weigh the different symbols to make the user win just the right amount that they will stay. I also read through the play store for various slot machine apps and seeing what users liked/disliked about these apps.
+- **General Frontend Practices**: Readable code, semantic HTML, responsive design, accessibility, separation of concerns, performance, cross-browser compatibility, error handling, and JS best practices
+- **Website Visuals**: Branding (audience/competitor analysis), color palette (60/30/10 rule), visual hierarchy, scale, and navigation patterns
+- **Slot Machine Frontend**: No scroll design, reels system (3-5 reels), paylines (straight/zig-zag), symbol types (standard, wildcard, scatter, bonus), 5+ themed machines, bright/dark backgrounds for contrast
+- **Animations**: Idle state (calm/glowing), smooth reel spins with 1-by-1 stops, win animations (splash screen, flashing, coins, screen shake), quick loss transitions
+- **Layout**: Large reels, centered spin button, balance display, bet controls, paytable, rules, sound/settings controls
+- **Technologies**: React/CSS
 
-I worked on figuring out which MCPs would be useful for our project. Also, researched how to use agent skills and what we should put in our AGENTS.md file.
+### Backend Summary
 
-### Ki 
+[Detailed backend summary (click)](./raw-research/backend/summary.md)
 
-### John
+- **General Backend Practices**: Readable and modular code, error handling with logging, input validation and sanitization, code documentation, expandable architecture, unit tests, linter compliance
+- **Slot Machine Features**: Multiple machines (5+), symbol types (wilds, scatters), bonuses (free spins, hourly tokens), jackpots, gambling mechanics (double or nothing), login/leaderboards
+- **Technologies**: Node.JS
 
-### Vinh
+### Users/UX Summary
 
-### Felix
+[Detailed users/ux summary (click)](./raw-research/users/summary.md)
 
-### William
+- **Keeping Users Engaged**: Volatility control (low = frequent modest wins, high = bigger occasional payouts), RTP optimization (98-99% for profitability), near-miss mechanics
+- **Near Miss Phenomena**: Virtual reel positioning - using weighted RNG to create near-misses that increase motivation and player retention
+- **Sound Design**: Positive reinforcement through sound, focus on wins over losses, attention-drawing effects, excitement creation, thematic alignment
+- **Retention Strategies**: New themes, seasonal events, missions, collections, achievement tracks, VIP tiers, login streaks, non-cash cosmetics
+- **Key Insight**: Sound design and near-misses can make players feel better about losses and return more frequently
 
-### Yang
+### Codex/Development Strategy Summary
 
-### Yusuf
+[Detailed codex summary (click)](./raw-research/codex/summary.md)
 
-### Nikita
+- **Agents.md**: Template for agent instructions including code structure, app theme, testing requirements
+- **Parallelization**: Connect GitHub repository to Codex for simultaneous multi-issue implementation with automated PR creation
+- **Skills**: Create separate SKILLS.md for specialized agent expertise (frontend, backend, etc.) to avoid context overload
+- **MCPs**: Use selectively (@playwright/mcp for browser viewing, Chrome DevTools MCP) without overwhelming the model
 
-### Matthew Beaudin
+## Research Task Breakdown
 
-
-# Bringing together our whole research agenda
+| Member           | Contribution                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | raw-research file                                                                                                                                                                     |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Himir            | I Worked on researching how to use codex effectively to parallelize tasks and complete the project faster. I then researched on which codex harness would work the best for our project. I also worked on summarising frontend, backend and codex raw research into a single summary file which could be used to plan the project and prompts to codex.                                                                                                                                           | [himir-research](./raw-research/codex/himir-research.pdf)                                                                                                                             |
+| Matthew Bozoukov | I primarily worked on figuring out the user experince side of the slot machine. This includes figuring out how to weigh the different symbols to make the user win just the right amount that they will stay. I also read through the play store for various slot machine apps and seeing what users liked/disliked about these apps. I worked on figuring out which MCPs would be useful for our project. Also, researched how to use agent skills and what we should put in our AGENTS.md file. | [codex matthew-bozoukov-research](./raw-research/codex/matthew-bozoukov-research.pdf) [users vinh-matthew-bozoukov-research](./raw-research/users/vinh-matthew-bozoukov-research.pdf) |
+| Ki               | I researched general good front end coding practices to figure out good front end design to make the UI more appealing and accessible to users. I also researched into best security practices for front end design to prevent malware attacks and loss of user data. Lastly, I researched into what tools are best in varying contexts for front end design                                                                                                                                      | [ki-research](./raw-research/frontend/general/ki-research.pdf)                                                                                                                        |
+| John             | I researched slot machine design to understand how reels, paylines, and symbols work together in gameplay. I also looked into animations and UI design, especially how things like spin timing, win effects, and layout can make the game feel more engaging and smooth.                                                                                                                                                                                                                          | [john-research](./raw-research/frontend/slot-machine/john-research.pdf)                                                                                                               |
+| Vinh             | I researched on the science behind sound design for slot machines such as its importance and how it affects the user when playing. I also looked at reasons as to why people would come back to play the slot machine.                                                                                                                                                                                                                                                                            | [vinh-matthew-bozoukov-research](./raw-research/users/vinh-matthew-bozoukov-research.pdf)                                                                                             |
+| Felix            | I researched common features of online slot machines to understand what techniques are used to retain and entertain users. This specifically encompassed reward/payout systems / game mechanics.                                                                                                                                                                                                                                                                                                  | [felix-research](./raw-research/backend/slot-machine/felix-research.pdf)                                                                                                              |
+| William          | I researched general good backend coding practices. I went over basics like readability, security, testing and more.                                                                                                                                                                                                                                                                                                                                                                              | [william-research](./raw-research/backend/general/william-research.pdf)                                                                                                               |
+| Yang             | I researched what most slot apps look like today and summarized the features that appear most often, such as daily rewards, jackpots, bonus rounds, tournaments, and social/VIP systems. I also connected these features to backend design ideas like wallet systems, event management, modular content support, and ranking or reward services.                                                                                                                                                  | [yang-research](./raw-research/backend/slot-machine/yang-research.md)                                                                                                                 |
+| Yusuf            | I researched general backend coding practices such as writing secure code, modularizing components (breaking the code into smaller independent pieces) , and implementing proper error handling to understand how to build a scalable and maintainable system.                                                                                                                                                                                                                                    | [yusuf-research](./raw-research/backend/general/yusuf-research.pdf)                                                                                                                   |
+| Nikita           | I researched general frontend coding practices such as making the frontend better for users to interact with the website. I also found general formats for the code that we should use. In relevance to the slot machine, there are certain features we can implement within the frontend to make our slot machine better for the users.                                                                                                                                                          | [nikita-research](./raw-research/frontend/general/nikita-research.pdf)                                                                                                                |
+| Matthew Beaudin  | I researched common/proper frontend coding practices to better understand the frontend design and development aspects of the project. During this I learned about the various do's and dont's of frontend coding to help ensure that our team is more efficient during development. I also researched common frontend components and features that are standard amongst many applications such as security, input validation, and many more.                                                      | [matthew-beaudin-research](./raw-research/frontend/general/matthew-beaudin-research.pdf)                                                                                              |
