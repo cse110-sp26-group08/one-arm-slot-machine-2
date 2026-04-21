@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { createApp, connectToDatabase } from './app.js';
 
 const BACKEND_PORT = Number.parseInt(process.env.BACKEND_PORT ?? '4000', 10);
