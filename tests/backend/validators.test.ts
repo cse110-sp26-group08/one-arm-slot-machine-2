@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import type { Request, Response } from 'express';
 import mongoose from 'mongoose';
 
 import {
@@ -218,7 +219,7 @@ function createRequest(options: {
   return {
     body: options.body ?? {},
     params: options.params ?? {}
-  };
+  } as Request;
 }
 
 /**
@@ -238,5 +239,5 @@ function createResponse() {
         }
       };
     }
-  };
+  } as Response & { statusCode: number; body: unknown };
 }
