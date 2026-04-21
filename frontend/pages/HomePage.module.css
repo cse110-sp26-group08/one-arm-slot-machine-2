@@ -88,11 +88,13 @@
 }
 
 .reelSymbol {
-  font-size: clamp(1rem, 1.9vw, 1.75rem);
-  font-weight: 800;
+  font-size: clamp(1.35rem, 2.5vw, 2.2rem);
+  line-height: 1;
+  filter: drop-shadow(0 2px 3px rgba(58, 29, 13, 0.12));
 }
 
 .reelLabel {
+  opacity: 0.7;
   font-size: 0.54rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;

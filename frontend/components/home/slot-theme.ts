@@ -12,12 +12,12 @@ export const classicGoldTheme: SlotMachineTheme = {
   accentLabel: 'Floor one',
   panelClassName: 'classicGold',
   symbolMap: {
-    seven: '7',
-    diamond: '<>',
-    bar: 'BAR',
-    cherry: 'CH',
-    bell: 'BL',
-    horseshoe: 'HS',
-    wild: 'WILD'
+    seven: '7️⃣',
+    diamond: '💎',
+    bar: '📶',
+    cherry: '🍒',
+    bell: '🔔',
+    horseshoe: '🧲',
+    wild: '🃏'
   }
 };
