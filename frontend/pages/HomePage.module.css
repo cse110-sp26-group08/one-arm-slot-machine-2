@@ -1,4 +1,5 @@
 .pageShell {
+  position: relative;
   height: 100vh;
   overflow: hidden;
   display: grid;
@@ -8,6 +9,83 @@
   background:
     radial-gradient(circle at 50% 18%, rgba(252, 211, 77, 0.15), transparent 14%),
     linear-gradient(180deg, #16080c 0%, #24111a 52%, #120f19 100%);
+}
+
+.celebrationOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(10, 7, 14, 0.42);
+  backdrop-filter: blur(3px);
+}
+
+.celebrationConfetti {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.confettiParticle {
+  --confetti-drift: 0px;
+  position: absolute;
+  top: -8%;
+  border-radius: 999px;
+  opacity: 0.94;
+  animation-name: confettiFall;
+  animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+  animation-fill-mode: both;
+}
+
+.celebrationCard {
+  position: relative;
+  z-index: 1;
+  width: min(420px, 100%);
+  display: grid;
+  gap: 10px;
+  padding: 26px 24px 22px;
+  border: 1px solid rgba(255, 224, 138, 0.3);
+  background:
+    radial-gradient(circle at top, rgba(255, 240, 195, 0.18), transparent 52%),
+    linear-gradient(180deg, rgba(83, 19, 30, 0.96), rgba(20, 15, 28, 0.98));
+  box-shadow:
+    0 24px 70px rgba(0, 0, 0, 0.35),
+    inset 0 0 0 1px rgba(255, 233, 176, 0.08);
+  text-align: center;
+}
+
+.celebrationEyebrow {
+  margin: 0;
+  font-size: 0.7rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: #f9c968;
+}
+
+.celebrationTitle {
+  margin: 0;
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  line-height: 0.94;
+  color: #fff4d5;
+}
+
+.celebrationBody {
+  margin: 0;
+  font-size: 1rem;
+  color: #f6ddb0;
+}
+
+.celebrationButton {
+  justify-self: center;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1px solid rgba(255, 224, 138, 0.22);
+  background: rgba(255, 245, 216, 0.08);
+  color: #fff4d5;
+  cursor: pointer;
 }
 
 .machineFrame {
@@ -273,5 +351,21 @@
 
   .reelMatrix {
     gap: 5px;
+  }
+}
+
+@keyframes confettiFall {
+  0% {
+    transform: translate3d(0, -12vh, 0) rotate(0deg);
+    opacity: 0;
+  }
+
+  10% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate3d(var(--confetti-drift), 112vh, 0) rotate(540deg);
+    opacity: 0.9;
   }
 }

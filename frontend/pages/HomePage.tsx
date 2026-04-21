@@ -1,8 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState, type MutableRefObject } from 'react';
 
+import { createConfettiParticles, getWinAnnouncement } from '../components/home/celebration.js';
 import { SlotMachineGrid } from '../components/home/SlotMachineGrid.js';
 import { SlotMachineStats } from '../components/home/SlotMachineStats.js';
+import { WinCelebration } from '../components/home/WinCelebration.js';
 import { classicGoldTheme } from '../components/home/slot-theme.js';
+import { playWinJingle } from '../services/celebration-audio.js';
 import { fetchSlotMachineState, spinSlotMachine, type SlotMachineState, type SlotSymbol } from '../services/slot-machine-client.js';
 import type { AuthenticatedUser } from '../services/auth-client.js';
 import styles from './HomePage.module.css';
@@ -14,6 +17,7 @@ interface HomePageProps {
 
 const previewSymbols: SlotSymbol[] = ['seven', 'diamond', 'bar', 'cherry', 'bell', 'horseshoe', 'wild'];
 const revealDelayInMilliseconds = 190;
+const celebrationDurationInMilliseconds = 3400;
 
 /**
  * Home page containing the connected slot-machine experience.
@@ -26,9 +30,25 @@ export function HomePage({ onLogout, user }: HomePageProps) {
   const [displayedGrid, setDisplayedGrid] = useState<SlotMachineState['grid'] | null>(null);
   const [isSpinning, setIsSpinning] = useState(false);
   const [statusMessage, setStatusMessage] = useState('No scroll, five paylines, and a bright center spin button ready to go.');
+  const [isCelebratingWin, setIsCelebratingWin] = useState(false);
+  const [winAnnouncement, setWinAnnouncement] = useState('');
+  const celebrationTimeoutRef = useRef<number | null>(null);
+  const confettiParticles = createConfettiParticles();
 
   useEffect(() => {
     void hydrateSlotMachineState();
+  }, []);
+
+  function dismissCelebration() {
+    clearCelebration(celebrationTimeoutRef, setIsCelebratingWin);
+  }
+
+  useEffect(() => {
+    return () => {
+      if (celebrationTimeoutRef.current) {
+        window.clearTimeout(celebrationTimeoutRef.current);
+      }
+    };
   }, []);
 
   async function hydrateSlotMachineState() {
@@ -42,6 +62,7 @@ export function HomePage({ onLogout, user }: HomePageProps) {
       return;
     }
 
+    dismissCelebration();
     setIsSpinning(true);
     setStatusMessage('Reels are spinning. They will stop from left to right to build tension.');
 
@@ -61,6 +82,22 @@ export function HomePage({ onLogout, user }: HomePageProps) {
     setDisplayedGrid(nextState.grid);
     setIsSpinning(false);
     setStatusMessage(resolveOutcomeMessage(nextState));
+
+    if (nextState.outcome === 'win') {
+      const announcement = getWinAnnouncement(nextState);
+      setWinAnnouncement(announcement);
+      setIsCelebratingWin(true);
+      void playWinJingle();
+
+      if (celebrationTimeoutRef.current) {
+        window.clearTimeout(celebrationTimeoutRef.current);
+      }
+
+      celebrationTimeoutRef.current = window.setTimeout(() => {
+        celebrationTimeoutRef.current = null;
+        setIsCelebratingWin(false);
+      }, celebrationDurationInMilliseconds);
+    }
   }
 
   if (!slotMachineState || !displayedGrid) {
@@ -76,6 +113,12 @@ export function HomePage({ onLogout, user }: HomePageProps) {
 
   return (
     <main className={styles.pageShell}>
+      <WinCelebration
+        announcement={winAnnouncement}
+        confettiParticles={confettiParticles}
+        isVisible={isCelebratingWin}
+        onDismiss={dismissCelebration}
+      />
       <SlotMachineGrid
         displayedGrid={displayedGrid}
         isSpinning={isSpinning}
@@ -156,4 +199,22 @@ function pause(durationInMilliseconds: number) {
   return new Promise<void>((resolve) => {
     window.setTimeout(resolve, durationInMilliseconds);
   });
+}
+
+/**
+ * Clears the win celebration overlay and any pending timeout.
+ *
+ * @param {MutableRefObject<number | null>} celebrationTimeoutRef - Pending celebration timeout ref.
+ * @param {(value: boolean) => void} setIsCelebratingWin - Celebration visibility setter.
+ */
+function clearCelebration(
+  celebrationTimeoutRef: MutableRefObject<number | null>,
+  setIsCelebratingWin: (value: boolean) => void
+) {
+  if (celebrationTimeoutRef.current) {
+    window.clearTimeout(celebrationTimeoutRef.current);
+    celebrationTimeoutRef.current = null;
+  }
+
+  setIsCelebratingWin(false);
 }
