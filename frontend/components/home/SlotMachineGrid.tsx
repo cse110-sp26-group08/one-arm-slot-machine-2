@@ -62,7 +62,7 @@ export function SlotMachineGrid({
       <div className={styles.machineMeta}>
         <div className={styles.metaBlock}>
           <span className={styles.metaLabel}>Paylines</span>
-          <span className={styles.metaValue}>5 active lines</span>
+          <span className={styles.metaValue}>5 active lines across a 3x3 grid</span>
         </div>
         <div className={styles.metaBlock}>
           <span className={styles.metaLabel}>Rules</span>

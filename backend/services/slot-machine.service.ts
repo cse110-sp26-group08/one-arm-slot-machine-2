@@ -1,15 +1,15 @@
 export const SLOT_MACHINE_ROWS = 3;
-export const SLOT_MACHINE_COLUMNS = 5;
+export const SLOT_MACHINE_COLUMNS = 3;
 export const DEFAULT_BET_AMOUNT = 25;
 export const DEFAULT_BALANCE = 1000;
 
 const _slotSymbols = ['seven', 'diamond', 'bar', 'cherry', 'bell', 'horseshoe', 'wild'] as const;
 const paylineRows = [
-  [0, 0, 0, 0, 0],
-  [1, 1, 1, 1, 1],
-  [2, 2, 2, 2, 2],
-  [0, 1, 2, 1, 0],
-  [2, 1, 0, 1, 2]
+  [0, 0, 0],
+  [1, 1, 1],
+  [2, 2, 2],
+  [0, 1, 2],
+  [2, 1, 0]
 ] as const;
 const symbolWeights: Record<SlotSymbol, number> = {
   seven: 4,
@@ -21,13 +21,13 @@ const symbolWeights: Record<SlotSymbol, number> = {
   wild: 3
 };
 const symbolPayoutMultipliers: Record<SlotSymbol, Record<number, number>> = {
-  seven: { 3: 5, 4: 12, 5: 24 },
-  diamond: { 3: 4, 4: 10, 5: 18 },
-  bar: { 3: 3, 4: 8, 5: 14 },
-  cherry: { 3: 2, 4: 5, 5: 10 },
-  bell: { 3: 3, 4: 7, 5: 12 },
-  horseshoe: { 3: 3, 4: 7, 5: 13 },
-  wild: { 3: 6, 4: 14, 5: 28 }
+  seven: { 3: 12 },
+  diamond: { 3: 9 },
+  bar: { 3: 7 },
+  cherry: { 3: 5 },
+  bell: { 3: 6 },
+  horseshoe: { 3: 6 },
+  wild: { 3: 15 }
 };
 
 export type SlotSymbol = (typeof _slotSymbols)[number];
@@ -180,7 +180,7 @@ export function calculatePayout(grid: SlotSymbol[][], betAmount: number) {
 }
 
 /**
- * Generates a random 3x5 slot-machine grid using weighted symbol probabilities.
+ * Generates a random 3x3 slot-machine grid using weighted symbol probabilities.
  *
  * @returns {SlotSymbol[][]} Randomized symbol grid.
  */
@@ -217,7 +217,7 @@ function evaluatePayline(paylineSymbols: SlotSymbol[], betAmount: number) {
 
   const payoutMultiplier =
     symbolPayoutMultipliers[resolvedSymbol][matchingCount] ??
-    symbolPayoutMultipliers[resolvedSymbol][5];
+    symbolPayoutMultipliers[resolvedSymbol][3];
 
   return {
     matchingCount,

@@ -23,7 +23,7 @@ test('createInitialSlotMachineState returns the expected starting stats', () => 
   assert.equal(initialState.grid[0].length, SLOT_MACHINE_COLUMNS);
 });
 
-test('createRandomGrid generates a 3x5 symbol grid', () => {
+test('createRandomGrid generates a 3x3 symbol grid', () => {
   const grid = createRandomGrid();
 
   assert.equal(grid.length, SLOT_MACHINE_ROWS);
@@ -33,37 +33,37 @@ test('createRandomGrid generates a 3x5 symbol grid', () => {
 test('calculatePayout rewards rows with three or more consecutive matches from the left', () => {
   const payout = calculatePayout(
     [
-      ['seven', 'seven', 'seven', 'diamond', 'bar'],
-      ['bell', 'bell', 'bell', 'bell', 'cherry'],
-      ['bar', 'cherry', 'bar', 'bar', 'bar']
+      ['seven', 'seven', 'seven'],
+      ['bell', 'bell', 'bell'],
+      ['bar', 'cherry', 'bar']
     ],
     25
   );
 
-  assert.equal(payout, 300);
+  assert.equal(payout, 450);
 });
 
 test('evaluateSpin returns a win with explicit winning lines', () => {
   const evaluatedSpin = evaluateSpin(
     [
-      ['seven', 'seven', 'seven', 'seven', 'seven'],
-      ['bar', 'diamond', 'bar', 'bell', 'bar'],
-      ['bell', 'cherry', 'bell', 'bar', 'cherry']
+      ['seven', 'seven', 'seven'],
+      ['bar', 'diamond', 'bar'],
+      ['bell', 'cherry', 'bell']
     ],
     25
   );
 
   assert.equal(evaluatedSpin.outcome, 'win');
   assert.equal(evaluatedSpin.winningLines.length, 1);
-  assert.equal(evaluatedSpin.winningLines[0].matchingCount, 5);
+  assert.equal(evaluatedSpin.winningLines[0].matchingCount, 3);
 });
 
 test('evaluateSpin marks near misses when a line starts with two matching symbols', () => {
   const evaluatedSpin = evaluateSpin(
     [
-      ['seven', 'diamond', 'bar', 'bell', 'cherry'],
-      ['bar', 'seven', 'horseshoe', 'bar', 'diamond'],
-      ['bar', 'cherry', 'bell', 'diamond', 'horseshoe']
+      ['seven', 'diamond', 'bar'],
+      ['bar', 'seven', 'horseshoe'],
+      ['bar', 'cherry', 'bell']
     ],
     25
   );

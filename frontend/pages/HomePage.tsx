@@ -13,7 +13,7 @@ interface HomePageProps {
 }
 
 const previewSymbols: SlotSymbol[] = ['seven', 'diamond', 'bar', 'cherry', 'bell', 'horseshoe', 'wild'];
-const revealDelayInMilliseconds = 170;
+const revealDelayInMilliseconds = 190;
 
 /**
  * Home page containing the connected slot-machine experience.
@@ -102,7 +102,7 @@ export function HomePage({ onLogout, user }: HomePageProps) {
 function createPreviewGrid(): SlotMachineState['grid'] {
   return Array.from({ length: 3 }, () =>
     Array.from(
-      { length: 5 },
+      { length: 3 },
       () => previewSymbols[Math.floor(Math.random() * previewSymbols.length)]
     )
   );
