@@ -6,39 +6,84 @@
 
 [Detailed frontend summary (click)](./raw-research/frontend/summary.md)
 
-- **General Frontend Practices**: Readable code, semantic HTML, responsive design, accessibility, separation of concerns, performance, cross-browser compatibility, error handling, and JS best practices
-- **Website Visuals**: Branding (audience/competitor analysis), color palette (60/30/10 rule), visual hierarchy, scale, and navigation patterns
-- **Slot Machine Frontend**: No scroll design, reels system (3-5 reels), paylines (straight/zig-zag), symbol types (standard, wildcard, scatter, bonus), 5+ themed machines, bright/dark backgrounds for contrast
-- **Animations**: Idle state (calm/glowing), smooth reel spins with 1-by-1 stops, win animations (splash screen, flashing, coins, screen shake), quick loss transitions
-- **Layout**: Large reels, centered spin button, balance display, bet controls, paytable, rules, sound/settings controls
-- **Technologies**: React/CSS
+**Domain (Problem Space):**
+
+- Code Quality Standards: Consistent formatting/styling, semantic HTML (no div soup), readable code with meaningful JS patterns (one function = one job), toggle CSS classes instead of inline .style
+- Responsive & Accessible Design: Adapt to all form factors, accessibility for people with disabilities, cross-browser compatibility
+- Performance Optimization: Lazy load non-critical assets, bundle assets, avoid unnecessary re-renders
+- Error Handling: Display meaningful error messages to users
+- Visual Design Principles: Branding (audience/competitor analysis), color theory (60/30/10 rule, complementary colors for section separation), visual hierarchy with symmetrical design, typography scale (14-16px body, 18-22px subheadings, up to 32px headings)
+- Navigation Patterns: Horizontal menus for desktop, hamburger menus for mobile
+- Animation Philosophy: Loss states smooth & quick, win states big & rewarding; save excitement for active gameplay
+- Technologies: React/CSS
+
+**User-Related Artifacts:**
+
+- Game UI Structure: No scroll design, 3-5 vertical reels tracked per spin (for payline calculation), paylines in straight or zig-zag patterns, symbol types (standard=base payouts, wildcard=substitutes, scatter=bonus trigger at 3+, bonus=free spins)
+- Machine Theming: 5+ distinct themed slot machine variations with bright/dark background contrast
+- Layout & Controls: Reels occupy majority of screen, large spin button centered below, balance display, bet adjustment controls, accessible paytable, rules/how-to-play section, sound mute toggle, brightness settings
+- Idle State: No large animations, calm presentation, reels stopped, spin button glowing, balance clearly visible
+- Reel Spin Sequence: Smooth spinning animation, slight shake when stopping, reels stop 1-by-1 to build tension, spin button light dims during spin
+- Win Animations: Splash screen, flashing symbols, flying coins, screen shake, bonus triggers receive more grand/elaborate animations
+- Loss Handling: Quick smooth transition, spin button re-lights promptly
 
 ### Backend Summary
 
 [Detailed backend summary (click)](./raw-research/backend/summary.md)
 
-- **General Backend Practices**: Readable and modular code, error handling with logging, input validation and sanitization, code documentation, expandable architecture, unit tests, linter compliance
-- **Slot Machine Features**: Multiple machines (5+), symbol types (wilds, scatters), bonuses (free spins, hourly tokens), jackpots, gambling mechanics (double or nothing), login/leaderboards
-- **Technologies**: Node.JS
+**Domain (Problem Space):**
+
+- Code Quality: Meaningful variable/function names, consistent formatting, small focused functions, separation of concerns, eliminate duplication
+- Reliability & Security: Error handling with logging, meaningful error messages, handle exceptions without crashes, validate all user input, type checking, sanitize inputs to prevent attacks
+- Documentation: Clean functional documentation (no unnecessary comments), proper function and complex code block documentation
+- Extensibility: Design code to accommodate future feature additions without modifying existing code
+- Quality Assurance: Write unit tests, maintain linter compliance
+- Technologies: Node.JS
+
+**User-Related Artifacts:**
+
+- Machine Library: 5+ different slot machine variants/themes available to players
+- Symbol System: Multiple symbol types (wilds that substitute, scatters that trigger bonuses) with distinct behaviors and payout rules
+- Reward Mechanics: Free spins on trigger, hourly bonus tokens, progressive jackpots
+- Gambling Features: Double or Nothing risk/reward mechanics
+- Player Engagement: Login system with persistent accounts, leaderboard rankings for competition
 
 ### Users/UX Summary
 
 [Detailed users/ux summary (click)](./raw-research/users/summary.md)
 
-- **Keeping Users Engaged**: Volatility control (low = frequent modest wins, high = bigger occasional payouts), RTP optimization (98-99% for profitability), near-miss mechanics
-- **Near Miss Phenomena**: Virtual reel positioning - using weighted RNG to create near-misses that increase motivation and player retention
-- **Sound Design**: Positive reinforcement through sound, focus on wins over losses, attention-drawing effects, excitement creation, thematic alignment
-- **Retention Strategies**: New themes, seasonal events, missions, collections, achievement tracks, VIP tiers, login streaks, non-cash cosmetics
-- **Key Insight**: Sound design and near-misses can make players feel better about losses and return more frequently
+**Domain (Problem Space):**
+
+- Volatility Strategy: Low volatility (frequent modest wins) maintains engagement; high volatility (longer dry spells with occasional big payouts) creates anticipation and excitement
+- RTP Economics: RTP = (probability of each outcome) × (payout of that outcome); 98-99% RTP = 1-2% house edge = sustainable profitability; achieved by weighting symbol combinations and designing payout structures
+- Near Miss Psychology: Research-proven that near misses increase motivation to continue playing, speed up next spin, and increase later betting; can be systematically programmed into reward sequences
+- Virtual Reel Implementation: Use RNG to select from large set of virtual reel positions (mapped to symbols as hashmap); weighted virtual reel positions directly control symbol combination frequencies displayed to player
+- Sound Science: Players misremember win frequency when sound is on vs mute; sound makes wins feel more significant than losses, draws attention, raises player self-esteem, increases cognitive load (creates feeling of excitement), gives perception that winning is more common
+- Sound Design Principle: Audio effects must align with game theme and be audible over ambient noise
+
+**User-Related Artifacts:**
+
+- Retention Mechanics: New themes released regularly, seasonal limited-time events, missions/objectives, collections to unlock, achievement/progression tracks
+- Reward Tiers: VIP tier system, daily login streak bonuses, non-cash cosmetic rewards, occasional low-complexity bonus events
+- Community Features: Leaderboards for competition, shared "bank" that accumulates showing eventual big payouts are possible (builds hope)
+- Experience Optimization: Sound paired with win animations to emphasize success, atmosphere designed to make players overlook/forget losses, near-misses strategically placed to maintain engagement
 
 ### Codex/Development Strategy Summary
 
 [Detailed codex summary (click)](./raw-research/codex/summary.md)
 
-- **Agents.md**: Template for agent instructions including code structure, app theme, testing requirements
-- **Parallelization**: Connect GitHub repository to Codex for simultaneous multi-issue implementation with automated PR creation
-- **Skills**: Create separate SKILLS.md for specialized agent expertise (frontend, backend, etc.) to avoid context overload
-- **MCPs**: Use selectively (@playwright/mcp for browser viewing, Chrome DevTools MCP) without overwhelming the model
+**Domain (Problem Space):**
+
+- Parallelization Workflow: Connect GitHub repository to Codex, create detailed issues, assign multiple simultaneous tasks to agents, agents work in parallel on different issues, generate pull requests for review and merge
+- Agent Architecture Principles: Skills-based specialization (each agent instance given specific skill like frontend/backend) prevents context overload and increases focus; selective MCP use avoids overwhelming model capabilities
+- Team Coordination: Clear templates enable consistent agent behavior and task understanding across team implementations
+
+**User-Related Artifacts (Development Configuration):**
+
+- Agents.md Template: Standard format including code structure expectations, project/app theme context, testing requirements and standards, task distribution strategy
+- Skills.md Definition: Specialized skill cards defining when to invoke specific agent expertise (frontend skills, backend skills, etc.) to maintain focus; each instance of agent has different skill
+- GitHub Integration: Detailed issue creation for each task, parallel task execution capabilities, automated PR generation from completed tasks
+- MCP Configuration: @playwright/mcp for browser viewing and automation, Chrome DevTools MCP for browser-based debugging and inspection
 
 ## Research Task Breakdown
 
