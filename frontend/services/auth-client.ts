@@ -1,5 +1,5 @@
 const SESSION_STORAGE_KEY = 'slot-machine-session-token';
-const API_BASE_URL = '/api/auth';
+const API_BASE_URL = 'http://localhost:4000/api/auth';
 
 export interface AuthenticatedUser {
   id: string;

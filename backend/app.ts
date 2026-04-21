@@ -1,4 +1,5 @@
 import express from 'express';
+import cors from 'cors';
 import { accountDataRouter } from './routes/account-data.routes.js';
 import { authRouter } from './routes/auth.routes.js';
 import { friendsRouter } from './routes/friends.routes.js';
@@ -25,7 +26,13 @@ export { userRouter } from './routes/user.routes.js';
  */
 export function createApp() {
   const application = express();
+  const frontendOrigin = process.env.FRONTEND_ORIGIN ?? 'http://localhost:5173';
 
+  application.use(
+    cors({
+      origin: frontendOrigin
+    })
+  );
   application.use(express.json());
   application.use('/api/auth', authRouter);
   application.use('/api/users', userRouter);
