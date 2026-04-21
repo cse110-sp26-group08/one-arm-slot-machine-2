@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
+import { listLeaderboard } from '../../backend/controllers/leaderboard.controller.js';
+import { AccountDataModel } from '../../backend/models/account-data.model.js';
 import { createUser, deleteUser } from '../../backend/controllers/user.controller.js';
 import { UserModel } from '../../backend/models/user.model.js';
 
@@ -55,6 +57,55 @@ test('deleteUser returns 404 when the target user does not exist', async () => {
 
   assert.equal(response.statusCode, 404);
   assert.deepEqual(response.body, { error: 'User not found.' });
+});
+
+test('listLeaderboard returns Mongo-backed users ordered by current balance', async () => {
+  const originalFind = AccountDataModel.find;
+
+  AccountDataModel.find = (() => ({
+    sort: () => ({
+      limit: () => ({
+        populate: () => ({
+          lean: async () => [
+            {
+              currentBalance: 2200,
+              currentUser: {
+                displayName: 'LuckyJane'
+              }
+            },
+            {
+              currentBalance: 1700,
+              currentUser: {
+                displayName: 'RubySpin'
+              }
+            }
+          ]
+        })
+      })
+    })
+  })) as unknown as typeof AccountDataModel.find;
+
+  const response = createResponse();
+
+  await listLeaderboard({} as never, response as never);
+
+  AccountDataModel.find = originalFind;
+
+  assert.equal(response.statusCode, 200);
+  assert.deepEqual(response.body, [
+    {
+      rank: 1,
+      balance: 2200,
+      displayName: 'LuckyJane',
+      title: 'Table leader'
+    },
+    {
+      rank: 2,
+      balance: 1700,
+      displayName: 'RubySpin',
+      title: 'High roller'
+    }
+  ]);
 });
 
 /**

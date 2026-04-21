@@ -1,37 +1,29 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { buildLeaderboardEntries } from '../../frontend/services/leaderboard-client.js';
+import { fetchLeaderboardEntries } from '../../frontend/services/leaderboard-client.js';
 
-test('buildLeaderboardEntries injects the current player and keeps entries sorted by balance', () => {
-  const leaderboardEntries = buildLeaderboardEntries(
-    {
-      id: 'current-player',
-      name: 'Marina',
-      displayName: 'Marina Blaze',
-      email: null,
-      isGuest: false
-    },
-    7000
-  );
+test('fetchLeaderboardEntries returns backend leaderboard rows', async () => {
+  const originalFetch = globalThis.fetch;
 
-  assert.equal(leaderboardEntries[0].displayName, 'Marina Blaze');
-  assert.equal(leaderboardEntries[0].balance, 7000);
-  assert.equal(leaderboardEntries[0].rank, 1);
-});
+  globalThis.fetch = (async () =>
+    ({
+      ok: true,
+      json: async () => [
+        {
+          rank: 1,
+          displayName: 'LuckyJane',
+          balance: 2200,
+          title: 'Table leader'
+        }
+      ]
+    })) as unknown as typeof fetch;
 
-test('buildLeaderboardEntries skips the current player when there is no tracked balance yet', () => {
-  const leaderboardEntries = buildLeaderboardEntries(
-    {
-      id: 'guest-player',
-      name: 'Guest',
-      displayName: 'Guest',
-      email: null,
-      isGuest: true
-    },
-    null
-  );
+  const leaderboardEntries = await fetchLeaderboardEntries();
 
-  assert.equal(leaderboardEntries.some((entry) => entry.displayName === 'Guest'), false);
-  assert.equal(leaderboardEntries.length, 6);
+  globalThis.fetch = originalFetch;
+
+  assert.equal(leaderboardEntries.length, 1);
+  assert.equal(leaderboardEntries[0].displayName, 'LuckyJane');
+  assert.equal(leaderboardEntries[0].balance, 2200);
 });

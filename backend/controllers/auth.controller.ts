@@ -1,6 +1,8 @@
 import type { Request, Response } from 'express';
 
+import { AccountDataModel } from '../models/account-data.model.js';
 import { UserModel } from '../models/user.model.js';
+import { DEFAULT_BALANCE } from '../services/slot-machine.service.js';
 import {
   createSessionToken,
   decodeSessionToken,
@@ -26,6 +28,10 @@ export async function signup(request: Request, response: Response) {
     user.set('password', request.body.password);
 
     await user.save();
+    await AccountDataModel.create({
+      currentUser: user._id,
+      currentBalance: DEFAULT_BALANCE
+    });
 
     response.status(201).json(createAuthenticatedSessionPayload({
       id: user.id,
@@ -66,6 +72,8 @@ export async function login(request: Request, response: Response) {
     return;
   }
 
+  await ensureAccountData(user.id);
+
   response.status(200).json(createAuthenticatedSessionPayload({
     id: user.id,
     name: user.name,
@@ -73,6 +81,21 @@ export async function login(request: Request, response: Response) {
     email: user.email,
     isGuest: false
   }));
+}
+
+async function ensureAccountData(userId: string) {
+  const existingAccountData = await AccountDataModel.findOne({
+    currentUser: userId
+  }).lean();
+
+  if (existingAccountData) {
+    return;
+  }
+
+  await AccountDataModel.create({
+    currentUser: userId,
+    currentBalance: DEFAULT_BALANCE
+  });
 }
 
 /**

@@ -5,7 +5,6 @@ import { fetchLeaderboardEntries, type LeaderboardEntry } from '../services/lead
 import styles from './LeaderboardPage.module.css';
 
 interface LeaderboardPageProps {
-  currentBalance: number | null;
   currentUser: AuthenticatedUser | null;
   onBack: () => void;
 }
@@ -17,19 +16,25 @@ interface LeaderboardPageProps {
  * @returns {JSX.Element} Leaderboard page UI.
  */
 export function LeaderboardPage({
-  currentBalance,
   currentUser,
   onBack
 }: LeaderboardPageProps) {
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
+  const [feedbackMessage, setFeedbackMessage] = useState(
+    'Live floor balances pulled from the current player database.'
+  );
 
   useEffect(() => {
     void loadLeaderboard();
-  }, [currentUser, currentBalance]);
+  }, []);
 
   async function loadLeaderboard() {
-    const nextEntries = await fetchLeaderboardEntries(currentUser, currentBalance);
-    setEntries(nextEntries);
+    try {
+      const nextEntries = await fetchLeaderboardEntries();
+      setEntries(nextEntries);
+    } catch (error) {
+      setFeedbackMessage(resolveErrorMessage(error, 'Leaderboard is unavailable right now.'));
+    }
   }
 
   return (
@@ -39,7 +44,7 @@ export function LeaderboardPage({
           <p className={styles.eyebrow}>Floor standings</p>
           <h1 className={styles.title}>Leaderboard</h1>
           <p className={styles.supportCopy}>
-            MongoDB is temporarily offline, so this board uses seeded floor data and adds the current player when available.
+            {feedbackMessage}
           </p>
         </div>
         <button className={styles.backButton} onClick={onBack} type="button">
@@ -77,4 +82,8 @@ export function LeaderboardPage({
       </section>
     </main>
   );
+}
+
+function resolveErrorMessage(error: unknown, fallbackMessage: string) {
+  return error instanceof Error ? error.message : fallbackMessage;
 }

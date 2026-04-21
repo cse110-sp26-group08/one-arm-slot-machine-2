@@ -1,5 +1,6 @@
 import type { Request, Response } from 'express';
 
+import { AccountDataModel } from '../models/account-data.model.js';
 import { decodeSessionToken } from '../services/auth-session.service.js';
 import {
   getSlotMachineState,
@@ -25,7 +26,7 @@ export function getCurrentSlotMachineState(request: Request, response: Response)
     return;
   }
 
-  response.status(200).json(getSlotMachineState(sessionUser.id));
+  void respondWithHydratedState(sessionUser, response);
 }
 
 /**
@@ -44,7 +45,7 @@ export function spinSlotMachineController(request: Request, response: Response) 
   }
 
   try {
-    response.status(200).json(spinSlotMachine(sessionUser.id));
+    void respondWithSyncedState(sessionUser, spinSlotMachine(sessionUser.id), response);
   } catch (error) {
     if (error instanceof SlotMachineStateError) {
       response.status(400).json({ error: error.message });
@@ -73,7 +74,11 @@ export function updateSlotMachineBetAmountController(request: Request, response:
   const nextBetAmount = Number(request.body?.betAmount);
 
   try {
-    response.status(200).json(setSlotMachineBetAmount(sessionUser.id, nextBetAmount));
+    void respondWithSyncedState(
+      sessionUser,
+      setSlotMachineBetAmount(sessionUser.id, nextBetAmount),
+      response
+    );
   } catch (error) {
     if (error instanceof SlotMachineStateError) {
       response.status(400).json({ error: error.message });
@@ -102,7 +107,11 @@ export function purchaseSlotMachinePrizeController(request: Request, response: R
   const prizeId = request.body?.prizeId as SlotPrizeId | undefined;
 
   try {
-    response.status(200).json(purchaseSlotMachinePrize(sessionUser.id, prizeId ?? 'snow-theme'));
+    void respondWithSyncedState(
+      sessionUser,
+      purchaseSlotMachinePrize(sessionUser.id, prizeId ?? 'snow-theme'),
+      response
+    );
   } catch (error) {
     if (error instanceof SlotMachineStateError) {
       response.status(400).json({ error: error.message });
@@ -111,6 +120,69 @@ export function purchaseSlotMachinePrizeController(request: Request, response: R
 
     response.status(500).json({ error: 'Unable to purchase the selected prize.' });
   }
+}
+
+async function respondWithHydratedState(
+  sessionUser: { id: string; isGuest?: boolean },
+  response: Response
+) {
+  try {
+    const currentState = getSlotMachineState(sessionUser.id);
+    const hydratedState = await hydratePersistentBalance(sessionUser, currentState);
+    response.status(200).json(hydratedState);
+  } catch {
+    response.status(500).json({ error: 'Unable to load slot machine state.' });
+  }
+}
+
+async function respondWithSyncedState(
+  sessionUser: { id: string; isGuest?: boolean },
+  state: ReturnType<typeof getSlotMachineState>,
+  response: Response
+) {
+  try {
+    const syncedState = await syncPersistentBalance(sessionUser, state);
+    response.status(200).json(syncedState);
+  } catch {
+    response.status(500).json({ error: 'Unable to sync slot machine state.' });
+  }
+}
+
+async function hydratePersistentBalance(
+  sessionUser: { id: string; isGuest?: boolean },
+  state: ReturnType<typeof getSlotMachineState>
+) {
+  if (sessionUser.isGuest) {
+    return state;
+  }
+
+  const accountData = await AccountDataModel.findOne({
+    currentUser: sessionUser.id
+  }).lean() as { currentBalance: number } | null;
+
+  if (!accountData) {
+    return state;
+  }
+
+  state.stats.totalBalance = accountData.currentBalance;
+  return state;
+}
+
+async function syncPersistentBalance(
+  sessionUser: { id: string; isGuest?: boolean },
+  state: ReturnType<typeof getSlotMachineState>
+) {
+  if (sessionUser.isGuest) {
+    return state;
+  }
+
+  await AccountDataModel.findOneAndUpdate(
+    { currentUser: sessionUser.id },
+    { currentBalance: state.stats.totalBalance },
+    { new: true, upsert: true, setDefaultsOnInsert: true }
+  );
+
+  return state;
 }
 
 /**

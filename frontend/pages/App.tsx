@@ -77,7 +77,6 @@ export function App() {
   if (currentView === 'leaderboard') {
     return (
       <LeaderboardPage
-        currentBalance={currentBalance}
         currentUser={authenticatedUser}
         onBack={handleCloseLeaderboard}
       />
