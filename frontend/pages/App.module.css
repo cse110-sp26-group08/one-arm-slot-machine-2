@@ -1,0 +1,271 @@
+.pageShell {
+  min-height: 100vh;
+  padding: 32px;
+  display: grid;
+  gap: 28px;
+  background-image:
+    linear-gradient(rgba(255, 226, 170, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 226, 170, 0.03) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.heroPanel,
+.authStage,
+.statusScreen {
+  border: 1px solid rgba(255, 214, 153, 0.18);
+  background: linear-gradient(180deg, rgba(37, 18, 14, 0.82), rgba(15, 18, 31, 0.9));
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.35);
+}
+
+.heroPanel,
+.statusScreen {
+  min-height: 38vh;
+  padding: 40px;
+  display: grid;
+  align-content: space-between;
+  gap: 18px;
+  position: relative;
+  overflow: hidden;
+}
+
+.heroPanel::after,
+.statusScreen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 78% 22%, rgba(255, 196, 89, 0.28), transparent 16%),
+    radial-gradient(circle at 84% 26%, rgba(248, 113, 113, 0.12), transparent 24%);
+  pointer-events: none;
+}
+
+.brandStack,
+.authCopy,
+.detailRail,
+.authSurface {
+  position: relative;
+  z-index: 1;
+}
+
+.eyebrow {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.34em;
+  font-size: 0.72rem;
+  color: #f6c56d;
+}
+
+.title,
+.sectionTitle,
+.text,
+.featureList {
+  margin: 0;
+}
+
+.title {
+  max-width: 10ch;
+  font-size: clamp(3rem, 7vw, 6rem);
+  line-height: 0.96;
+}
+
+.sectionTitle {
+  max-width: 12ch;
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  line-height: 1;
+}
+
+.supportCopy {
+  max-width: 42rem;
+  font-size: 1.05rem;
+  color: rgba(245, 234, 214, 0.84);
+}
+
+.marqueeStrip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.marqueeItem {
+  padding: 10px 14px;
+  border: 1px solid rgba(255, 214, 153, 0.2);
+  color: #ffde9d;
+  background: rgba(255, 248, 220, 0.06);
+  animation: pulseGlow 3.6s ease-in-out infinite;
+}
+
+.marqueeItem:nth-child(2) {
+  animation-delay: 0.4s;
+}
+
+.marqueeItem:nth-child(3) {
+  animation-delay: 0.8s;
+}
+
+.marqueeItem:nth-child(4) {
+  animation-delay: 1.2s;
+}
+
+.authStage {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) minmax(320px, 1.1fr);
+  gap: 28px;
+  padding: 32px;
+}
+
+.authCopy {
+  display: grid;
+  gap: 18px;
+  align-content: start;
+}
+
+.featureList {
+  padding-left: 18px;
+  display: grid;
+  gap: 10px;
+  color: rgba(245, 234, 214, 0.84);
+}
+
+.feedbackBanner {
+  padding: 16px 18px;
+  border-left: 3px solid #f6c56d;
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff2cf;
+}
+
+.authSurface {
+  display: grid;
+  gap: 20px;
+  padding: 24px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02));
+}
+
+.modeToggle {
+  display: inline-grid;
+  grid-template-columns: repeat(2, 1fr);
+  border: 1px solid rgba(255, 214, 153, 0.2);
+}
+
+.modeButton,
+.primaryButton,
+.secondaryButton {
+  padding: 14px 18px;
+  border: 1px solid transparent;
+  transition:
+    transform 160ms ease,
+    background-color 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.modeButton {
+  background: transparent;
+  color: #f5ead6;
+}
+
+.modeButtonActive {
+  background: linear-gradient(180deg, rgba(247, 181, 84, 0.2), rgba(247, 181, 84, 0.08));
+  border-color: rgba(255, 214, 153, 0.3);
+}
+
+.authForm {
+  display: grid;
+  gap: 16px;
+}
+
+.signupForm {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.fullWidth {
+  grid-column: 1 / -1;
+}
+
+.field {
+  display: grid;
+  gap: 8px;
+  color: rgba(245, 234, 214, 0.9);
+}
+
+.input {
+  min-height: 48px;
+  padding: 0 14px;
+  border: 1px solid rgba(255, 214, 153, 0.16);
+  background: rgba(8, 12, 19, 0.68);
+  color: #fdf8ea;
+}
+
+.captchaPrompt {
+  padding: 12px 14px;
+  background: rgba(246, 197, 109, 0.1);
+  color: #f6d79b;
+}
+
+.primaryButton {
+  background: linear-gradient(180deg, #f6c56d, #d58a2e);
+  color: #291409;
+  font-weight: 700;
+}
+
+.secondaryButton {
+  background: transparent;
+  color: #f6d79b;
+  border-color: rgba(255, 214, 153, 0.24);
+}
+
+.guestButton {
+  justify-self: start;
+}
+
+.modeButton:hover,
+.primaryButton:hover,
+.secondaryButton:hover {
+  transform: translateY(-1px);
+}
+
+.authenticatedPanel {
+  min-height: 52vh;
+}
+
+.detailRail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+
+.detailLabel {
+  display: block;
+  margin-bottom: 6px;
+  color: rgba(246, 197, 109, 0.9);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.75rem;
+}
+
+@keyframes pulseGlow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 rgba(246, 197, 109, 0);
+  }
+
+  50% {
+    box-shadow: 0 0 22px rgba(246, 197, 109, 0.14);
+  }
+}
+
+@media (max-width: 880px) {
+  .pageShell {
+    padding: 18px;
+  }
+
+  .heroPanel,
+  .statusScreen,
+  .authStage {
+    padding: 22px;
+  }
+
+  .authStage,
+  .signupForm {
+    grid-template-columns: 1fr;
+  }
+}
