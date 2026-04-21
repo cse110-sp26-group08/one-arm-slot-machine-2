@@ -1,16 +1,34 @@
 const SLOT_MACHINE_API_BASE_URL = 'http://localhost:4000/api/slot-machine';
 const SESSION_STORAGE_KEY = 'slot-machine-session-token';
 
-export type SlotSymbol = 'seven' | 'diamond' | 'bar' | 'cherry' | 'bell' | 'horseshoe';
+export type SlotSymbol =
+  | 'seven'
+  | 'diamond'
+  | 'bar'
+  | 'cherry'
+  | 'bell'
+  | 'horseshoe'
+  | 'wild';
+export type SlotOutcome = 'loss' | 'near-miss' | 'win';
+
+export interface WinningLine {
+  matchingCount: number;
+  path: number[];
+  paylineIndex: number;
+  payout: number;
+  symbol: SlotSymbol;
+}
 
 export interface SlotMachineState {
   grid: SlotSymbol[][];
   lastPayout: number;
+  outcome: SlotOutcome;
   stats: {
     currentBetAmount: number;
     numberOfSpins: number;
     totalBalance: number;
   };
+  winningLines: WinningLine[];
 }
 
 /**

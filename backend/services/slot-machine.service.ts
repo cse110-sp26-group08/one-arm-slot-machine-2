@@ -3,9 +3,43 @@ export const SLOT_MACHINE_COLUMNS = 5;
 export const DEFAULT_BET_AMOUNT = 25;
 export const DEFAULT_BALANCE = 1000;
 
-const slotSymbols = ['seven', 'diamond', 'bar', 'cherry', 'bell', 'horseshoe'] as const;
+const _slotSymbols = ['seven', 'diamond', 'bar', 'cherry', 'bell', 'horseshoe', 'wild'] as const;
+const paylineRows = [
+  [0, 0, 0, 0, 0],
+  [1, 1, 1, 1, 1],
+  [2, 2, 2, 2, 2],
+  [0, 1, 2, 1, 0],
+  [2, 1, 0, 1, 2]
+] as const;
+const symbolWeights: Record<SlotSymbol, number> = {
+  seven: 4,
+  diamond: 6,
+  bar: 10,
+  cherry: 12,
+  bell: 8,
+  horseshoe: 7,
+  wild: 3
+};
+const symbolPayoutMultipliers: Record<SlotSymbol, Record<number, number>> = {
+  seven: { 3: 5, 4: 12, 5: 24 },
+  diamond: { 3: 4, 4: 10, 5: 18 },
+  bar: { 3: 3, 4: 8, 5: 14 },
+  cherry: { 3: 2, 4: 5, 5: 10 },
+  bell: { 3: 3, 4: 7, 5: 12 },
+  horseshoe: { 3: 3, 4: 7, 5: 13 },
+  wild: { 3: 6, 4: 14, 5: 28 }
+};
 
-export type SlotSymbol = (typeof slotSymbols)[number];
+export type SlotSymbol = (typeof _slotSymbols)[number];
+export type SlotOutcome = 'loss' | 'near-miss' | 'win';
+
+export interface WinningLine {
+  matchingCount: number;
+  path: number[];
+  paylineIndex: number;
+  payout: number;
+  symbol: SlotSymbol;
+}
 
 export interface SlotMachineStats {
   currentBetAmount: number;
@@ -16,7 +50,9 @@ export interface SlotMachineStats {
 export interface SlotMachineState {
   grid: SlotSymbol[][];
   lastPayout: number;
+  outcome: SlotOutcome;
   stats: SlotMachineStats;
+  winningLines: WinningLine[];
 }
 
 const slotMachineStateByPlayer = new Map<string, SlotMachineState>();
@@ -49,15 +85,20 @@ export function getSlotMachineState(playerId: string) {
 export function spinSlotMachine(playerId: string) {
   const currentState = getSlotMachineState(playerId);
   const spunGrid = createRandomGrid();
-  const payout = calculatePayout(spunGrid, currentState.stats.currentBetAmount);
+  const evaluatedSpin = evaluateSpin(spunGrid, currentState.stats.currentBetAmount);
   const updatedState: SlotMachineState = {
     grid: spunGrid,
-    lastPayout: payout,
+    lastPayout: evaluatedSpin.payout,
+    outcome: evaluatedSpin.outcome,
     stats: {
       currentBetAmount: currentState.stats.currentBetAmount,
       numberOfSpins: currentState.stats.numberOfSpins + 1,
-      totalBalance: currentState.stats.totalBalance - currentState.stats.currentBetAmount + payout
-    }
+      totalBalance:
+        currentState.stats.totalBalance -
+        currentState.stats.currentBetAmount +
+        evaluatedSpin.payout
+    },
+    winningLines: evaluatedSpin.winningLines
   };
 
   slotMachineStateByPlayer.set(playerId, updatedState);
@@ -73,52 +114,143 @@ export function createInitialSlotMachineState(): SlotMachineState {
   return {
     grid: createRandomGrid(),
     lastPayout: 0,
+    outcome: 'loss',
     stats: {
       totalBalance: DEFAULT_BALANCE,
       currentBetAmount: DEFAULT_BET_AMOUNT,
       numberOfSpins: 0
-    }
+    },
+    winningLines: []
   };
 }
 
 /**
- * Calculates the payout by checking consecutive matching symbols from the left side of each row.
+ * Evaluates the slot-machine grid against all paylines.
+ *
+ * @param {SlotSymbol[][]} grid - Current slot-machine grid.
+ * @param {number} betAmount - Current bet amount.
+ * @returns {{ outcome: SlotOutcome; payout: number; winningLines: WinningLine[] }} Evaluated spin result.
+ */
+export function evaluateSpin(grid: SlotSymbol[][], betAmount: number) {
+  const winningLines = paylineRows.flatMap((path, paylineIndex) => {
+    const paylineSymbols = path.map((rowIndex, columnIndex) => grid[rowIndex][columnIndex]);
+    const evaluatedPayline = evaluatePayline(paylineSymbols, betAmount);
+
+    if (!evaluatedPayline) {
+      return [];
+    }
+
+    return [
+      {
+        ...evaluatedPayline,
+        path: [...path],
+        paylineIndex
+      }
+    ];
+  });
+  const payout = winningLines.reduce(
+    (totalPayout, winningLine) => totalPayout + winningLine.payout,
+    0
+  );
+
+  if (winningLines.length > 0) {
+    return {
+      outcome: 'win' as const,
+      payout,
+      winningLines
+    };
+  }
+
+  return {
+    outcome: hasNearMiss(grid) ? ('near-miss' as const) : ('loss' as const),
+    payout: 0,
+    winningLines: []
+  };
+}
+
+/**
+ * Retained payout-only wrapper for existing callers and tests.
  *
  * @param {SlotSymbol[][]} grid - Current slot-machine grid.
  * @param {number} betAmount - Current bet amount.
  * @returns {number} Total payout for the spin.
  */
 export function calculatePayout(grid: SlotSymbol[][], betAmount: number) {
-  return grid.reduce((totalPayout, row) => {
-    const firstSymbol = row[0];
-    let matchingCount = 1;
-
-    for (let columnIndex = 1; columnIndex < row.length; columnIndex += 1) {
-      if (row[columnIndex] !== firstSymbol) {
-        break;
-      }
-
-      matchingCount += 1;
-    }
-
-    if (matchingCount < 3) {
-      return totalPayout;
-    }
-
-    return totalPayout + betAmount * matchingCount;
-  }, 0);
+  return evaluateSpin(grid, betAmount).payout;
 }
 
 /**
- * Generates a random 3x5 slot-machine grid.
+ * Generates a random 3x5 slot-machine grid using weighted symbol probabilities.
  *
  * @returns {SlotSymbol[][]} Randomized symbol grid.
  */
 export function createRandomGrid() {
   return Array.from({ length: SLOT_MACHINE_ROWS }, () =>
-    Array.from({ length: SLOT_MACHINE_COLUMNS }, () => {
-      const randomIndex = Math.floor(Math.random() * slotSymbols.length);
-      return slotSymbols[randomIndex];
-    })
+    Array.from({ length: SLOT_MACHINE_COLUMNS }, () => chooseWeightedSymbol())
   );
+}
+
+/**
+ * Evaluates a single payline from left to right.
+ *
+ * @param {SlotSymbol[]} paylineSymbols - Symbols across the payline.
+ * @param {number} betAmount - Current bet amount.
+ * @returns {Omit<WinningLine, 'path' | 'paylineIndex'> | null} Winning-line result.
+ */
+function evaluatePayline(paylineSymbols: SlotSymbol[], betAmount: number) {
+  const resolvedSymbol =
+    paylineSymbols.find((symbol) => symbol !== 'wild') ?? paylineSymbols[0];
+  let matchingCount = 0;
+
+  for (const symbol of paylineSymbols) {
+    if (symbol === resolvedSymbol || symbol === 'wild' || resolvedSymbol === 'wild') {
+      matchingCount += 1;
+      continue;
+    }
+
+    break;
+  }
+
+  if (matchingCount < 3) {
+    return null;
+  }
+
+  const payoutMultiplier =
+    symbolPayoutMultipliers[resolvedSymbol][matchingCount] ??
+    symbolPayoutMultipliers[resolvedSymbol][5];
+
+  return {
+    matchingCount,
+    payout: betAmount * payoutMultiplier,
+    symbol: resolvedSymbol
+  };
+}
+
+/**
+ * Detects a near miss by checking whether any payline begins with two matching symbols.
+ *
+ * @param {SlotSymbol[][]} grid - Current slot-machine grid.
+ * @returns {boolean} True when the grid contains a near miss.
+ */
+function hasNearMiss(grid: SlotSymbol[][]) {
+  return paylineRows.some((path) => {
+    const firstSymbol = grid[path[0]][0];
+    const secondSymbol = grid[path[1]][1];
+
+    return firstSymbol === secondSymbol || firstSymbol === 'wild' || secondSymbol === 'wild';
+  });
+}
+
+/**
+ * Chooses a symbol using weighted probabilities.
+ *
+ * @returns {SlotSymbol} Weighted random symbol.
+ */
+function chooseWeightedSymbol() {
+  const weightedPool = Object.entries(symbolWeights).flatMap(([symbol, weight]) =>
+    Array.from({ length: weight }, () => symbol as SlotSymbol)
+  );
+  const randomIndex = Math.floor(Math.random() * weightedPool.length);
+
+  return weightedPool[randomIndex];
 }

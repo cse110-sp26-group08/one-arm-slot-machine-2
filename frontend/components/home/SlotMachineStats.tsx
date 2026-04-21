@@ -2,8 +2,10 @@ import styles from '../../pages/HomePage.module.css';
 import type { SlotMachineState } from '../../services/slot-machine-client.js';
 
 interface SlotMachineStatsProps {
+  isSpinning: boolean;
   onLogout: () => void;
   onSpin: () => void | Promise<void>;
+  statusMessage: string;
   slotMachineState: SlotMachineState;
   userDisplayName: string;
 }
@@ -15,8 +17,10 @@ interface SlotMachineStatsProps {
  * @returns {JSX.Element} Stats and controls UI.
  */
 export function SlotMachineStats({
+  isSpinning,
   onLogout,
   onSpin,
+  statusMessage,
   slotMachineState,
   userDisplayName
 }: SlotMachineStatsProps) {
@@ -30,8 +34,13 @@ export function SlotMachineStats({
         <span className={styles.statsLabel}>Total balance</span>
         <strong className={styles.statsValue}>{slotMachineState.stats.totalBalance}</strong>
       </div>
-      <button className={styles.spinButton} onClick={() => void onSpin()} type="button">
-        Spin
+      <button
+        className={`${styles.spinButton} ${isSpinning ? styles.spinButtonBusy : ''}`}
+        disabled={isSpinning}
+        onClick={() => void onSpin()}
+        type="button"
+      >
+        {isSpinning ? 'Spinning...' : 'Spin'}
       </button>
       <div className={styles.statsColumn}>
         <span className={styles.statsLabel}>Current bet</span>
@@ -44,6 +53,7 @@ export function SlotMachineStats({
       <button className={styles.exitButton} onClick={onLogout} type="button">
         Exit floor
       </button>
+      <div className={styles.statusBanner}>{statusMessage}</div>
     </section>
   );
 }

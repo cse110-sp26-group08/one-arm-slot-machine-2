@@ -3,6 +3,9 @@ import type { SlotSymbol } from '../../services/slot-machine-client.js';
 import type { SlotMachineTheme } from './slot-theme.js';
 
 interface ReelCellProps {
+  isSpinning: boolean;
+  isWinning: boolean;
+  spinDelayMilliseconds: number;
   symbol: SlotSymbol;
   theme: SlotMachineTheme;
 }
@@ -13,9 +16,22 @@ interface ReelCellProps {
  * @param {ReelCellProps} props - Reel cell props.
  * @returns {JSX.Element} Reel cell UI.
  */
-export function ReelCell({ symbol, theme }: ReelCellProps) {
+export function ReelCell({
+  isSpinning,
+  isWinning,
+  spinDelayMilliseconds,
+  symbol,
+  theme
+}: ReelCellProps) {
   return (
-    <div className={styles.reelCell}>
+    <div
+      className={[
+        styles.reelCell,
+        isSpinning ? styles.reelCellSpinning : '',
+        isWinning ? styles.reelCellWinning : ''
+      ].join(' ')}
+      style={{ animationDelay: `${spinDelayMilliseconds}ms` }}
+    >
       <span className={styles.reelSymbol}>{theme.symbolMap[symbol]}</span>
       <span className={styles.reelLabel}>{symbol}</span>
     </div>

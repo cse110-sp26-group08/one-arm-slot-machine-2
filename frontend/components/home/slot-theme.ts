@@ -13,10 +13,11 @@ export const classicGoldTheme: SlotMachineTheme = {
   panelClassName: 'classicGold',
   symbolMap: {
     seven: '7',
-    diamond: '◆',
+    diamond: '<>',
     bar: 'BAR',
-    cherry: '🍒',
-    bell: '🔔',
-    horseshoe: '♞'
+    cherry: 'CH',
+    bell: 'BL',
+    horseshoe: 'HS',
+    wild: 'WILD'
   }
 };

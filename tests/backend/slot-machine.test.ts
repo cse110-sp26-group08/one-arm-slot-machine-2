@@ -8,6 +8,7 @@ import {
   calculatePayout,
   createInitialSlotMachineState,
   createRandomGrid,
+  evaluateSpin,
   getSlotMachineState,
   spinSlotMachine
 } from '../../backend/services/slot-machine.service.js';
@@ -39,7 +40,36 @@ test('calculatePayout rewards rows with three or more consecutive matches from t
     25
   );
 
-  assert.equal(payout, 175);
+  assert.equal(payout, 300);
+});
+
+test('evaluateSpin returns a win with explicit winning lines', () => {
+  const evaluatedSpin = evaluateSpin(
+    [
+      ['seven', 'seven', 'seven', 'seven', 'seven'],
+      ['bar', 'diamond', 'bar', 'bell', 'bar'],
+      ['bell', 'cherry', 'bell', 'bar', 'cherry']
+    ],
+    25
+  );
+
+  assert.equal(evaluatedSpin.outcome, 'win');
+  assert.equal(evaluatedSpin.winningLines.length, 1);
+  assert.equal(evaluatedSpin.winningLines[0].matchingCount, 5);
+});
+
+test('evaluateSpin marks near misses when a line starts with two matching symbols', () => {
+  const evaluatedSpin = evaluateSpin(
+    [
+      ['seven', 'diamond', 'bar', 'bell', 'cherry'],
+      ['bar', 'seven', 'horseshoe', 'bar', 'diamond'],
+      ['bar', 'cherry', 'bell', 'diamond', 'horseshoe']
+    ],
+    25
+  );
+
+  assert.equal(evaluatedSpin.outcome, 'near-miss');
+  assert.equal(evaluatedSpin.payout, 0);
 });
 
 test('spinSlotMachine updates spins and keeps session state per player', () => {
