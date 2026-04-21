@@ -1,5 +1,6 @@
 import express from 'express';
 import { accountDataRouter } from './routes/account-data.routes.js';
+import { authRouter } from './routes/auth.routes.js';
 import { friendsRouter } from './routes/friends.routes.js';
 import { gameRouter } from './routes/game.routes.js';
 import { userRouter } from './routes/user.routes.js';
@@ -12,6 +13,7 @@ export {
   UserModel
 } from './models/index.js';
 export { accountDataRouter } from './routes/account-data.routes.js';
+export { authRouter } from './routes/auth.routes.js';
 export { friendsRouter } from './routes/friends.routes.js';
 export { gameRouter } from './routes/game.routes.js';
 export { userRouter } from './routes/user.routes.js';
@@ -25,6 +27,7 @@ export function createApp() {
   const application = express();
 
   application.use(express.json());
+  application.use('/api/auth', authRouter);
   application.use('/api/users', userRouter);
   application.use('/api/account-data', accountDataRouter);
   application.use('/api/friends', friendsRouter);
