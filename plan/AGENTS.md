@@ -1,10 +1,10 @@
 
 # description of the project
-Create a slot machine app that uses vanilla web technology like HTML, CSS, JavaScript, and platform APIs.
+Create a slot machine app that uses MERN tech stack.
 
 
 # Workflow
-You will be given an issue in the prompt and your job is to implement this issue which will be a feature requested by a user. Once you are done with the feature you will first design tests to test the feature you implemented then you will raise a pr request signaling what fetaure you completed.
+You will be given an issue in the prompt and your job is to implement this issue which will be a feature requested by a user. Once you are done with the feature you will first design tests to test the feature you implemented then you will raise a pr request signaling what fetaure you completed. Have the tests be stored in tests folder.
 
 # Skills
 You have a few skills at your disposal. First, you will have the playwright skill which will allow you to visit the project in the broswer while you are building it. You will also have a github skill that will allow you to raise prs.
