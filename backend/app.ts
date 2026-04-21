@@ -4,6 +4,7 @@ import { accountDataRouter } from './routes/account-data.routes.js';
 import { authRouter } from './routes/auth.routes.js';
 import { friendsRouter } from './routes/friends.routes.js';
 import { gameRouter } from './routes/game.routes.js';
+import { slotMachineRouter } from './routes/slot-machine.routes.js';
 import { userRouter } from './routes/user.routes.js';
 
 export { connectToDatabase, disconnectFromDatabase } from './config/database.js';
@@ -17,6 +18,7 @@ export { accountDataRouter } from './routes/account-data.routes.js';
 export { authRouter } from './routes/auth.routes.js';
 export { friendsRouter } from './routes/friends.routes.js';
 export { gameRouter } from './routes/game.routes.js';
+export { slotMachineRouter } from './routes/slot-machine.routes.js';
 export { userRouter } from './routes/user.routes.js';
 
 /**
@@ -39,6 +41,7 @@ export function createApp() {
   application.use('/api/account-data', accountDataRouter);
   application.use('/api/friends', friendsRouter);
   application.use('/api/games', gameRouter);
+  application.use('/api/slot-machine', slotMachineRouter);
 
   return application;
 }

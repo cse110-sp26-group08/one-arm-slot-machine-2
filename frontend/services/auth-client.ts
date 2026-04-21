@@ -104,6 +104,15 @@ export async function checkActiveSession() {
 }
 
 /**
+ * Clears the cached session token from local storage.
+ *
+ * @returns {void}
+ */
+export function clearStoredSession() {
+  localStorage.removeItem(SESSION_STORAGE_KEY);
+}
+
+/**
  * Stores the session token locally to preserve login across reloads.
  *
  * @param {string} token - Signed session token from the backend.

@@ -1,0 +1,181 @@
+.pageShell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  gap: 20px;
+  padding: 20px;
+  background:
+    radial-gradient(circle at 50% 18%, rgba(252, 211, 77, 0.18), transparent 16%),
+    linear-gradient(180deg, #190a0d 0%, #26131b 48%, #120f19 100%);
+}
+
+.machineFrame {
+  min-height: calc(100vh - 220px);
+  display: grid;
+  gap: 24px;
+  align-content: center;
+  padding: 28px;
+  border: 2px solid rgba(255, 224, 138, 0.24);
+  background:
+    linear-gradient(180deg, rgba(255, 246, 219, 0.04), rgba(255, 246, 219, 0.01)),
+    linear-gradient(180deg, rgba(79, 17, 26, 0.94), rgba(20, 15, 28, 0.96));
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 232, 170, 0.1),
+    0 28px 90px rgba(0, 0, 0, 0.4);
+}
+
+.machineHeading {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 16px;
+}
+
+.eyebrow {
+  margin: 0 0 10px;
+  font-size: 0.72rem;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: #f9c968;
+}
+
+.machineTitle {
+  margin: 0;
+  font-size: clamp(2.4rem, 5vw, 4.8rem);
+  line-height: 0.95;
+  color: #fff4d5;
+}
+
+.payoutBadge {
+  padding: 12px 16px;
+  border: 1px solid rgba(249, 201, 104, 0.26);
+  color: #ffeab6;
+  background: rgba(255, 248, 220, 0.08);
+}
+
+.reelMatrix {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.reelCell {
+  aspect-ratio: 1 / 1;
+  display: grid;
+  place-items: center;
+  gap: 6px;
+  padding: 14px;
+  border: 1px solid rgba(255, 224, 138, 0.18);
+  background:
+    linear-gradient(180deg, rgba(255, 250, 232, 0.9), rgba(231, 213, 172, 0.96));
+  color: #3a1d0d;
+  box-shadow: inset 0 -8px 20px rgba(122, 78, 23, 0.16);
+}
+
+.reelSymbol {
+  font-size: clamp(2rem, 4vw, 3.8rem);
+  font-weight: 700;
+}
+
+.reelLabel {
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.statsBar {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) minmax(220px, 320px) repeat(2, minmax(0, 1fr)) auto;
+  align-items: center;
+  gap: 18px;
+  padding: 18px 22px;
+  border: 1px solid rgba(255, 224, 138, 0.18);
+  background: rgba(13, 13, 20, 0.88);
+}
+
+.statsColumn {
+  display: grid;
+  gap: 6px;
+}
+
+.statsLabel {
+  font-size: 0.72rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(255, 234, 182, 0.7);
+}
+
+.statsValue {
+  font-size: 1.6rem;
+  color: #fff6dc;
+}
+
+.spinButton {
+  min-height: 88px;
+  border: 0;
+  border-radius: 999px;
+  background: radial-gradient(circle at 50% 30%, #fff2c0 0%, #f9c968 38%, #c25922 100%);
+  color: #311206;
+  font-size: clamp(1.5rem, 3vw, 2.2rem);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  box-shadow:
+    0 0 32px rgba(249, 201, 104, 0.26),
+    inset 0 -10px 16px rgba(94, 35, 8, 0.18);
+}
+
+.exitButton {
+  min-height: 48px;
+  padding: 0 18px;
+  border: 1px solid rgba(255, 224, 138, 0.2);
+  background: transparent;
+  color: #ffeab6;
+}
+
+.spinButton,
+.exitButton {
+  cursor: pointer;
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.spinButton:hover,
+.exitButton:hover {
+  transform: translateY(-1px);
+}
+
+@media (max-width: 1024px) {
+  .reelMatrix {
+    grid-template-columns: repeat(5, minmax(52px, 1fr));
+  }
+
+  .statsBar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .spinButton,
+  .exitButton {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 700px) {
+  .pageShell {
+    padding: 12px;
+  }
+
+  .machineFrame {
+    min-height: auto;
+    padding: 18px;
+  }
+
+  .machineHeading {
+    grid-template-columns: 1fr;
+    display: grid;
+    align-items: start;
+  }
+
+  .reelMatrix {
+    gap: 8px;
+  }
+}

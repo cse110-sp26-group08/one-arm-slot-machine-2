@@ -1,21 +1,22 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import {
-  checkActiveSession,
   loginWithEmail,
   playAsGuest,
   signUpUser,
-  type AuthenticatedUser,
+  type AuthSession,
   type LoginPayload,
   type SignUpPayload
 } from '../services/auth-client.js';
 import styles from './App.module.css';
-import { AuthenticatedView } from '../components/auth/AuthenticatedView.js';
 import { AuthShell } from '../components/auth/AuthShell.js';
-import { AuthStatusScreen } from '../components/auth/AuthStatusScreen.js';
 import { initialLoginForm, initialSignupForm, type FormMode, type LoginFormState, type SignupFormState } from '../components/auth/auth-types.js';
 import { LoginForm } from '../components/auth/LoginForm.js';
 import { SignupForm } from '../components/auth/SignupForm.js';
+
+interface LoginPageProps {
+  onAuthenticated: (session: AuthSession) => void;
+}
 
 /**
  * Visual thesis: a cinematic casino entry portal with brass, velvet, and marquee light energy.
@@ -24,33 +25,12 @@ import { SignupForm } from '../components/auth/SignupForm.js';
  *
  * @returns {JSX.Element} Login and signup page for the slot machine app.
  */
-export function LoginPage() {
+export function LoginPage({ onAuthenticated }: LoginPageProps) {
   const [mode, setMode] = useState<FormMode>('login');
   const [loginForm, setLoginForm] = useState(initialLoginForm);
   const [signupForm, setSignupForm] = useState(initialSignupForm);
-  const [authenticatedUser, setAuthenticatedUser] = useState<AuthenticatedUser | null>(null);
-  const [isCheckingSession, setIsCheckingSession] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState('Enter the arcade with your existing account or spin up a new identity.');
-
-  useEffect(() => {
-    void hydrateSession();
-  }, []);
-
-  async function hydrateSession() {
-    try {
-      const activeSession = await checkActiveSession();
-
-      if (activeSession) {
-        setAuthenticatedUser(activeSession.user);
-        setFeedbackMessage(`Welcome back, ${activeSession.user.displayName}. Your seat is still warm.`);
-      }
-    } catch {
-      setFeedbackMessage('Your previous session expired. Sign in again to keep your streak intact.');
-    } finally {
-      setIsCheckingSession(false);
-    }
-  }
 
   async function handleLoginSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -60,7 +40,7 @@ export function LoginPage() {
     try {
       const session = await loginWithEmail(loginForm as LoginPayload);
 
-      setAuthenticatedUser(session.user);
+      onAuthenticated(session);
       setFeedbackMessage(`Logged in as ${session.user.displayName}. Ready for the first spin.`);
     } catch (error) {
       setFeedbackMessage(resolveErrorMessage(error, 'Login failed. Double-check your email and password.'));
@@ -83,7 +63,7 @@ export function LoginPage() {
     try {
       const session = await signUpUser(signupForm as SignUpPayload);
 
-      setAuthenticatedUser(session.user);
+      onAuthenticated(session);
       setFeedbackMessage(`Account created for ${session.user.displayName}. Your guest streak starts now.`);
     } catch (error) {
       setFeedbackMessage(resolveErrorMessage(error, 'Signup failed. Review the form and try again.'));
@@ -99,19 +79,13 @@ export function LoginPage() {
     try {
       const session = await playAsGuest();
 
-      setAuthenticatedUser(session.user);
+      onAuthenticated(session);
       setFeedbackMessage('Guest access granted. Explore the arcade before committing to a full account.');
     } catch (error) {
       setFeedbackMessage(resolveErrorMessage(error, 'Guest access is unavailable right now.'));
     } finally {
       setIsSubmitting(false);
     }
-  }
-
-  function handleLogout() {
-    localStorage.removeItem('slot-machine-session-token');
-    setAuthenticatedUser(null);
-    setFeedbackMessage('Session cleared on this device. You can still return with your email login.');
   }
 
   function handleLoginChange(field: keyof LoginFormState, value: string) {
@@ -126,22 +100,6 @@ export function LoginPage() {
       ...currentForm,
       [field]: value
     }));
-  }
-
-  if (isCheckingSession) {
-    return (
-      <main className={styles.pageShell}>
-        <AuthStatusScreen />
-      </main>
-    );
-  }
-
-  if (authenticatedUser) {
-    return (
-      <main className={styles.pageShell}>
-        <AuthenticatedView onLogout={handleLogout} user={authenticatedUser} />
-      </main>
-    );
   }
 
   return (
