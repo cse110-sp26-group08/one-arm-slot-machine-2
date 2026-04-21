@@ -32,6 +32,14 @@ export function SlotMachineGrid({
 
   return (
     <section className={styles.machineFrame}>
+      <div className={styles.machineTopper}>
+        {theme.jackpotLabels.map((jackpotLabel) => (
+          <div className={styles.jackpotMeter} key={jackpotLabel.name}>
+            <span className={styles.jackpotName}>{jackpotLabel.name}</span>
+            <span className={styles.jackpotAmount}>{jackpotLabel.amount}</span>
+          </div>
+        ))}
+      </div>
       <div className={styles.machineHeading}>
         <div>
           <p className={styles.eyebrow}>{theme.accentLabel}</p>
@@ -45,19 +53,21 @@ export function SlotMachineGrid({
               : `Last payout: ${slotMachineState.lastPayout}`}
         </div>
       </div>
-      <div className={styles.reelMatrix}>
-        {displayedGrid.flatMap((row, rowIndex) =>
-          row.map((symbol, columnIndex) => (
-            <ReelCell
-              isSpinning={isSpinning}
-              isWinning={!isSpinning && winningPositions.has(`${rowIndex}-${columnIndex}`)}
-              key={`${rowIndex}-${columnIndex}-${symbol}`}
-              spinDelayMilliseconds={columnIndex * 160}
-              symbol={symbol}
-              theme={theme}
-            />
-          ))
-        )}
+      <div className={styles.reelCabinet}>
+        <div className={styles.reelMatrix}>
+          {displayedGrid.flatMap((row, rowIndex) =>
+            row.map((symbol, columnIndex) => (
+              <ReelCell
+                isSpinning={isSpinning}
+                isWinning={!isSpinning && winningPositions.has(`${rowIndex}-${columnIndex}`)}
+                key={`${rowIndex}-${columnIndex}-${symbol}`}
+                spinDelayMilliseconds={columnIndex * 160}
+                symbol={symbol}
+                theme={theme}
+              />
+            ))
+          )}
+        </div>
       </div>
       <div className={styles.machineMeta}>
         <div className={styles.metaBlock}>

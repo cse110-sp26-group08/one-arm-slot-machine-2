@@ -4,11 +4,13 @@
   overflow: hidden;
   display: grid;
   grid-template-rows: minmax(0, 1fr) auto;
-  gap: 12px;
-  padding: 12px;
+  gap: 10px;
+  padding: 10px;
   background:
-    radial-gradient(circle at 50% 18%, rgba(252, 211, 77, 0.15), transparent 14%),
-    linear-gradient(180deg, #16080c 0%, #24111a 52%, #120f19 100%);
+    radial-gradient(circle at 50% 12%, rgba(255, 228, 122, 0.2), transparent 12%),
+    radial-gradient(circle at 50% 100%, rgba(255, 119, 41, 0.2), transparent 22%),
+    linear-gradient(90deg, rgba(37, 7, 7, 0.94) 0 6%, transparent 6% 94%, rgba(37, 7, 7, 0.94) 94%),
+    linear-gradient(180deg, #250606 0%, #5d1709 26%, #7b230f 48%, #51110a 74%, #1b090d 100%);
 }
 
 .celebrationOverlay {
@@ -92,52 +94,110 @@
   min-height: 0;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
-  gap: 10px;
-  padding: 14px;
-  border: 2px solid rgba(255, 224, 138, 0.22);
+  gap: 8px;
+  padding: 10px;
+  border: 3px solid #9c4b08;
+  border-radius: 14px;
   background:
-    linear-gradient(180deg, rgba(255, 246, 219, 0.03), rgba(255, 246, 219, 0.01)),
-    linear-gradient(180deg, rgba(79, 17, 26, 0.95), rgba(20, 15, 28, 0.97));
+    linear-gradient(180deg, rgba(255, 208, 116, 0.2), rgba(255, 208, 116, 0.04) 8%, transparent 18%),
+    linear-gradient(180deg, #8b280a 0%, #5d1707 18%, #3f0f08 100%);
   box-shadow:
-    inset 0 0 0 1px rgba(255, 232, 170, 0.08),
-    0 18px 60px rgba(0, 0, 0, 0.35);
+    inset 0 0 0 2px rgba(255, 196, 86, 0.26),
+    inset 0 -18px 24px rgba(27, 5, 2, 0.35),
+    0 18px 60px rgba(0, 0, 0, 0.38);
+}
+
+.machineTopper {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.jackpotMeter {
+  display: grid;
+  gap: 3px;
+  padding: 8px 10px;
+  border: 2px solid #df9817;
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(255, 247, 197, 0.16), rgba(255, 247, 197, 0) 40%),
+    linear-gradient(180deg, #1f0d0a, #321206);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 231, 155, 0.15),
+    0 0 18px rgba(255, 176, 0, 0.14);
+}
+
+.jackpotName {
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #63f1ff;
+}
+
+.jackpotAmount {
+  font-size: 1.02rem;
+  font-weight: 800;
+  color: #fff366;
 }
 
 .machineHeading {
   display: flex;
   justify-content: space-between;
-  align-items: end;
-  gap: 10px;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 8px 2px;
 }
 
 .eyebrow {
   margin: 0 0 8px;
-  font-size: 0.68rem;
-  letter-spacing: 0.3em;
+  font-size: 0.72rem;
+  letter-spacing: 0.34em;
   text-transform: uppercase;
-  color: #f9c968;
+  color: #ffe473;
 }
 
 .machineTitle {
   margin: 0;
-  font-size: clamp(1.5rem, 3vw, 2.6rem);
-  line-height: 0.94;
-  color: #fff4d5;
+  font-size: clamp(2rem, 4.2vw, 3.8rem);
+  line-height: 0.9;
+  text-transform: uppercase;
+  color: #ffd44f;
+  text-shadow:
+    0 0 4px rgba(255, 247, 202, 0.35),
+    0 0 18px rgba(255, 155, 54, 0.55),
+    0 3px 0 #7c1706;
 }
 
 .payoutBadge {
-  padding: 8px 12px;
-  border: 1px solid rgba(249, 201, 104, 0.24);
-  color: #ffeab6;
-  background: rgba(255, 248, 220, 0.07);
+  padding: 10px 16px;
+  border: 2px solid #df9817;
+  border-radius: 10px;
+  color: #fff694;
+  background:
+    linear-gradient(180deg, rgba(255, 228, 126, 0.18), rgba(255, 228, 126, 0.04)),
+    linear-gradient(180deg, #341008, #220d08);
+  box-shadow: 0 0 16px rgba(255, 180, 0, 0.16);
   white-space: nowrap;
+}
+
+.reelCabinet {
+  min-height: 0;
+  padding: 10px;
+  border: 3px solid #df9817;
+  border-radius: 12px;
+  background:
+    linear-gradient(180deg, rgba(255, 220, 124, 0.18), rgba(255, 220, 124, 0.04) 6%, transparent 8%),
+    linear-gradient(180deg, #0e5554 0%, #106462 100%);
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 219, 123, 0.15),
+    inset 0 -14px 18px rgba(6, 30, 29, 0.34);
 }
 
 .reelMatrix {
   min-height: 0;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
+  gap: 6px;
 }
 
 .reelCell {
@@ -146,12 +206,16 @@
   display: grid;
   place-items: center;
   gap: 4px;
-  padding: 8px;
-  border: 1px solid rgba(255, 224, 138, 0.18);
+  padding: 8px 6px;
+  border: 2px solid rgba(255, 199, 67, 0.42);
+  border-radius: 10px;
   background:
-    linear-gradient(180deg, rgba(255, 250, 232, 0.92), rgba(231, 213, 172, 0.98));
-  color: #3a1d0d;
-  box-shadow: inset 0 -8px 20px rgba(122, 78, 23, 0.14);
+    radial-gradient(circle at 50% 22%, rgba(255, 255, 255, 0.12), transparent 28%),
+    linear-gradient(180deg, rgba(18, 119, 115, 0.96), rgba(8, 75, 72, 0.96));
+  color: #fff6d8;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 244, 200, 0.12),
+    inset 0 -10px 22px rgba(1, 25, 23, 0.4);
 }
 
 .reelCellSpinning {
@@ -161,21 +225,28 @@
 .reelCellWinning {
   animation: winningPulse 480ms ease-in-out 3;
   box-shadow:
-    inset 0 -8px 20px rgba(122, 78, 23, 0.14),
-    0 0 18px rgba(249, 201, 104, 0.3);
+    inset 0 0 0 1px rgba(255, 244, 200, 0.12),
+    inset 0 -10px 22px rgba(1, 25, 23, 0.4),
+    0 0 20px rgba(255, 205, 66, 0.55);
 }
 
 .reelSymbol {
-  font-size: clamp(1.35rem, 2.5vw, 2.2rem);
+  font-size: clamp(2rem, 3.8vw, 3.8rem);
   line-height: 1;
-  filter: drop-shadow(0 2px 3px rgba(58, 29, 13, 0.12));
+  filter:
+    drop-shadow(0 0 6px rgba(255, 236, 161, 0.2))
+    drop-shadow(0 3px 3px rgba(8, 28, 29, 0.36));
 }
 
 .reelLabel {
-  opacity: 0.7;
-  font-size: 0.54rem;
-  letter-spacing: 0.12em;
+  opacity: 0.92;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(117, 14, 12, 0.58);
+  font-size: 0.5rem;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
+  color: #fff1b8;
 }
 
 .machineMeta {
@@ -188,7 +259,8 @@
   display: grid;
   gap: 4px;
   padding-top: 8px;
-  border-top: 1px solid rgba(255, 224, 138, 0.14);
+  padding-inline: 8px;
+  border-top: 1px solid rgba(255, 205, 90, 0.22);
 }
 
 .metaLabel {
@@ -208,9 +280,13 @@
   grid-template-columns: repeat(2, minmax(0, 1fr)) minmax(190px, 260px) repeat(2, minmax(0, 1fr)) auto;
   align-items: center;
   gap: 10px;
-  padding: 12px 16px;
-  border: 1px solid rgba(255, 224, 138, 0.18);
-  background: rgba(13, 13, 20, 0.9);
+  padding: 12px 14px;
+  border: 3px solid #9c4b08;
+  border-radius: 12px;
+  background:
+    linear-gradient(180deg, rgba(255, 208, 116, 0.14), rgba(255, 208, 116, 0) 14%),
+    linear-gradient(180deg, #2d0f0b, #17080b);
+  box-shadow: inset 0 0 0 2px rgba(255, 199, 67, 0.12);
 }
 
 .statsColumn {
@@ -226,8 +302,8 @@
 }
 
 .statsValue {
-  font-size: 1.12rem;
-  color: #fff6dc;
+  font-size: 1.18rem;
+  color: #fff49f;
 }
 
 .betControl {
@@ -239,8 +315,9 @@
 .betStepper {
   width: 32px;
   height: 32px;
-  border: 1px solid rgba(255, 224, 138, 0.22);
-  background: rgba(255, 245, 216, 0.06);
+  border: 2px solid #df9817;
+  border-radius: 6px;
+  background: linear-gradient(180deg, #5f1408, #341008);
   color: #fff4d5;
   cursor: pointer;
 }
@@ -252,17 +329,18 @@
 
 .spinButton {
   min-height: 64px;
-  border: 0;
+  border: 3px solid rgba(255, 233, 161, 0.3);
   border-radius: 999px;
-  background: radial-gradient(circle at 50% 30%, #fff2c0 0%, #f9c968 38%, #c25922 100%);
-  color: #311206;
+  background:
+    radial-gradient(circle at 50% 36%, #c9fff4 0%, #41edc6 34%, #15a7a0 68%, #0b4f54 100%);
+  color: #fbfffc;
   font-size: clamp(1.05rem, 2vw, 1.45rem);
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   box-shadow:
-    0 0 24px rgba(249, 201, 104, 0.24),
-    inset 0 -10px 16px rgba(94, 35, 8, 0.18);
+    0 0 26px rgba(65, 237, 198, 0.28),
+    inset 0 -10px 16px rgba(2, 44, 46, 0.28);
   animation: idleGlow 2.4s ease-in-out infinite;
 }
 
@@ -274,8 +352,9 @@
 .exitButton {
   min-height: 42px;
   padding: 0 16px;
-  border: 1px solid rgba(255, 224, 138, 0.2);
-  background: transparent;
+  border: 2px solid #df9817;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #5f1408, #341008);
   color: #ffeab6;
 }
 
@@ -305,14 +384,14 @@
   0%,
   100% {
     box-shadow:
-      0 0 18px rgba(249, 201, 104, 0.18),
-      inset 0 -10px 16px rgba(94, 35, 8, 0.18);
+      0 0 18px rgba(65, 237, 198, 0.18),
+      inset 0 -10px 16px rgba(2, 44, 46, 0.28);
   }
 
   50% {
     box-shadow:
-      0 0 30px rgba(249, 201, 104, 0.34),
-      inset 0 -10px 16px rgba(94, 35, 8, 0.18);
+      0 0 30px rgba(65, 237, 198, 0.38),
+      inset 0 -10px 16px rgba(2, 44, 46, 0.28);
   }
 }
 
@@ -345,6 +424,10 @@
 }
 
 @media (max-width: 1024px) {
+  .machineTopper {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .statsBar {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -364,6 +447,10 @@
   .machineFrame {
     padding: 12px;
     gap: 10px;
+  }
+
+  .machineTopper {
+    grid-template-columns: 1fr;
   }
 
   .machineHeading,

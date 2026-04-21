@@ -33,7 +33,7 @@ export function ReelCell({
       style={{ animationDelay: `${spinDelayMilliseconds}ms` }}
     >
       <span className={styles.reelSymbol}>{theme.symbolMap[symbol]}</span>
-      <span className={styles.reelLabel}>{symbol}</span>
+      <span className={styles.reelLabel}>{theme.symbolLabelMap[symbol]}</span>
     </div>
   );
 }
