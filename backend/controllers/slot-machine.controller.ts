@@ -3,7 +3,9 @@ import type { Request, Response } from 'express';
 import { decodeSessionToken } from '../services/auth-session.service.js';
 import {
   getSlotMachineState,
+  purchaseSlotMachinePrize,
   setSlotMachineBetAmount,
+  type SlotPrizeId,
   SlotMachineStateError,
   spinSlotMachine
 } from '../services/slot-machine.service.js';
@@ -79,6 +81,35 @@ export function updateSlotMachineBetAmountController(request: Request, response:
     }
 
     response.status(500).json({ error: 'Unable to update the bet amount.' });
+  }
+}
+
+/**
+ * Purchases a slot-machine prize for the authenticated player.
+ *
+ * @param {Request} request - Express request containing the bearer token and prize identifier.
+ * @param {Response} response - Express response containing the updated state.
+ * @returns {void}
+ */
+export function purchaseSlotMachinePrizeController(request: Request, response: Response) {
+  const sessionUser = resolveSessionUser(request);
+
+  if (!sessionUser) {
+    response.status(401).json({ error: 'Authentication is required.' });
+    return;
+  }
+
+  const prizeId = request.body?.prizeId as SlotPrizeId | undefined;
+
+  try {
+    response.status(200).json(purchaseSlotMachinePrize(sessionUser.id, prizeId ?? 'snow-theme'));
+  } catch (error) {
+    if (error instanceof SlotMachineStateError) {
+      response.status(400).json({ error: error.message });
+      return;
+    }
+
+    response.status(500).json({ error: 'Unable to purchase the selected prize.' });
   }
 }
 

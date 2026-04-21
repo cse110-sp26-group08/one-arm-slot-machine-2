@@ -1,4 +1,4 @@
-import type { SlotMachineState } from '../../services/slot-machine-client.js';
+import type { SlotMachineState, WinCelebrationTheme } from '../../services/slot-machine-client.js';
 
 export interface ConfettiParticle {
   color: string;
@@ -11,6 +11,7 @@ export interface ConfettiParticle {
 }
 
 const confettiPalette = ['#f9c968', '#ff7f51', '#ff4d6d', '#5eead4', '#7dd3fc', '#fef08a'];
+const snowPalette = ['#f8fdff', '#d8f4ff', '#e8fbff'];
 
 /**
  * Builds deterministic confetti particle values for the win overlay.
@@ -18,14 +19,20 @@ const confettiPalette = ['#f9c968', '#ff7f51', '#ff4d6d', '#5eead4', '#7dd3fc', 
  * @param {number} particleCount - Number of particles to generate.
  * @returns {ConfettiParticle[]} Particle metadata for CSS-driven animation.
  */
-export function createConfettiParticles(particleCount = 24) {
+export function createCelebrationParticles(
+  theme: WinCelebrationTheme,
+  particleCount = 24
+) {
+  const palette = theme === 'snow' ? snowPalette : confettiPalette;
+
   return Array.from({ length: particleCount }, (_, index) => ({
-    color: confettiPalette[index % confettiPalette.length],
-    driftOffset: ((index * 19) % 44) - 22,
-    durationInMilliseconds: 1450 + ((index * 73) % 500),
+    color: palette[index % palette.length],
+    driftOffset: theme === 'snow' ? ((index * 13) % 26) - 13 : ((index * 19) % 44) - 22,
+    durationInMilliseconds:
+      theme === 'snow' ? 2500 + ((index * 91) % 900) : 1450 + ((index * 73) % 500),
     horizontalPosition: 4 + ((index * 11) % 92),
     rotationInDegrees: (index * 41) % 360,
-    sizeInPixels: 10 + (index % 5) * 2,
+    sizeInPixels: theme === 'snow' ? 8 + (index % 4) * 3 : 10 + (index % 5) * 2,
     delayInMilliseconds: (index % 8) * 50
   }));
 }

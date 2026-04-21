@@ -10,6 +10,8 @@ export type SlotSymbol =
   | 'horseshoe'
   | 'wild';
 export type SlotOutcome = 'loss' | 'near-miss' | 'win';
+export type SlotPrizeId = 'enhanced-luck' | 'snow-theme';
+export type WinCelebrationTheme = 'classic' | 'snow';
 
 export interface WinningLine {
   matchingCount: number;
@@ -23,11 +25,16 @@ export interface SlotMachineState {
   grid: SlotSymbol[][];
   lastPayout: number;
   outcome: SlotOutcome;
+  prizes: {
+    enhancedLuckExpiresAt: number | null;
+    snowThemeUnlocked: boolean;
+  };
   stats: {
     currentBetAmount: number;
     numberOfSpins: number;
     totalBalance: number;
   };
+  winCelebrationTheme: WinCelebrationTheme;
   winningLines: WinningLine[];
 }
 
@@ -63,6 +70,19 @@ export async function updateSlotMachineBetAmount(betAmount: number) {
   return sendAuthenticatedSlotMachineRequest<SlotMachineState>('/bet', {
     method: 'POST',
     body: JSON.stringify({ betAmount })
+  });
+}
+
+/**
+ * Purchases a prize upgrade for the authenticated user.
+ *
+ * @param {SlotPrizeId} prizeId - Prize identifier to purchase.
+ * @returns {Promise<SlotMachineState>} Updated slot-machine state.
+ */
+export async function purchaseSlotMachinePrize(prizeId: SlotPrizeId) {
+  return sendAuthenticatedSlotMachineRequest<SlotMachineState>('/prize', {
+    method: 'POST',
+    body: JSON.stringify({ prizeId })
   });
 }
 

@@ -2,12 +2,14 @@ import type { CSSProperties } from 'react';
 
 import styles from '../../pages/HomePage.module.css';
 import type { ConfettiParticle } from './celebration.js';
+import type { WinCelebrationTheme } from '../../services/slot-machine-client.js';
 
 interface WinCelebrationProps {
   announcement: string;
   confettiParticles: ConfettiParticle[];
   isVisible: boolean;
   onDismiss: () => void;
+  theme: WinCelebrationTheme;
 }
 
 /**
@@ -20,7 +22,8 @@ export function WinCelebration({
   announcement,
   confettiParticles,
   isVisible,
-  onDismiss
+  onDismiss,
+  theme
 }: WinCelebrationProps) {
   if (!isVisible) {
     return null;
@@ -43,7 +46,7 @@ export function WinCelebration({
 
           return (
             <span
-              className={styles.confettiParticle}
+              className={theme === 'snow' ? styles.snowParticle : styles.confettiParticle}
               key={`${particle.horizontalPosition}-${index}`}
               style={particleStyle}
             />

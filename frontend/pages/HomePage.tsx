@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type MutableRefObject } from 'react';
 
-import { createConfettiParticles, getWinAnnouncement } from '../components/home/celebration.js';
+import { createCelebrationParticles, getWinAnnouncement } from '../components/home/celebration.js';
 import { SlotMachineGrid } from '../components/home/SlotMachineGrid.js';
 import { SlotMachineStats } from '../components/home/SlotMachineStats.js';
 import { WinCelebration } from '../components/home/WinCelebration.js';
@@ -18,7 +18,9 @@ import styles from './HomePage.module.css';
 
 interface HomePageProps {
   onOpenLeaderboard: (currentBalance: number) => void;
+  onOpenPrizePage: (currentBalance: number) => void;
   onLogout: () => void;
+  onStateBalanceChange: (currentBalance: number) => void;
   user: AuthenticatedUser;
 }
 
@@ -32,7 +34,13 @@ const celebrationDurationInMilliseconds = 3400;
  * @param {HomePageProps} props - Home page props.
  * @returns {JSX.Element} Home page UI.
  */
-export function HomePage({ onLogout, onOpenLeaderboard, user }: HomePageProps) {
+export function HomePage({
+  onLogout,
+  onOpenLeaderboard,
+  onOpenPrizePage,
+  onStateBalanceChange,
+  user
+}: HomePageProps) {
   const [slotMachineState, setSlotMachineState] = useState<SlotMachineState | null>(null);
   const [displayedGrid, setDisplayedGrid] = useState<SlotMachineState['grid'] | null>(null);
   const [isSpinning, setIsSpinning] = useState(false);
@@ -41,7 +49,8 @@ export function HomePage({ onLogout, onOpenLeaderboard, user }: HomePageProps) {
   const [isCelebratingWin, setIsCelebratingWin] = useState(false);
   const [winAnnouncement, setWinAnnouncement] = useState('');
   const celebrationTimeoutRef = useRef<number | null>(null);
-  const confettiParticles = createConfettiParticles();
+  const celebrationTheme = slotMachineState?.winCelebrationTheme ?? 'classic';
+  const celebrationParticles = createCelebrationParticles(celebrationTheme);
 
   useEffect(() => {
     void hydrateSlotMachineState();
@@ -63,6 +72,7 @@ export function HomePage({ onLogout, onOpenLeaderboard, user }: HomePageProps) {
     const currentState = await fetchSlotMachineState();
     setSlotMachineState(currentState);
     setDisplayedGrid(currentState.grid);
+    onStateBalanceChange(currentState.stats.totalBalance);
   }
 
   async function handleSpin() {
@@ -89,6 +99,7 @@ export function HomePage({ onLogout, onOpenLeaderboard, user }: HomePageProps) {
 
       setSlotMachineState(nextState);
       setDisplayedGrid(nextState.grid);
+      onStateBalanceChange(nextState.stats.totalBalance);
       setStatusMessage(resolveOutcomeMessage(nextState));
 
       if (nextState.outcome === 'win') {
@@ -125,6 +136,7 @@ export function HomePage({ onLogout, onOpenLeaderboard, user }: HomePageProps) {
     try {
       const nextState = await updateSlotMachineBetAmount(nextBetAmount);
       setSlotMachineState(nextState);
+      onStateBalanceChange(nextState.stats.totalBalance);
       setStatusMessage(
         `Bet updated to ${nextState.stats.currentBetAmount}. Balance available: ${nextState.stats.totalBalance}.`
       );
@@ -151,9 +163,10 @@ export function HomePage({ onLogout, onOpenLeaderboard, user }: HomePageProps) {
     <main className={styles.pageShell}>
       <WinCelebration
         announcement={winAnnouncement}
-        confettiParticles={confettiParticles}
+        confettiParticles={celebrationParticles}
         isVisible={isCelebratingWin}
         onDismiss={dismissCelebration}
+        theme={celebrationTheme}
       />
       <SlotMachineGrid
         displayedGrid={displayedGrid}
@@ -165,6 +178,7 @@ export function HomePage({ onLogout, onOpenLeaderboard, user }: HomePageProps) {
         isUpdatingBet={isUpdatingBet}
         isSpinning={isSpinning}
         onBetAmountChange={handleBetAmountChange}
+        onOpenPrizePage={() => onOpenPrizePage(slotMachineState.stats.totalBalance)}
         onOpenLeaderboard={() => onOpenLeaderboard(slotMachineState.stats.totalBalance)}
         onLogout={onLogout}
         onSpin={handleSpin}

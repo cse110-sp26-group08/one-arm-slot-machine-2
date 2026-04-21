@@ -6,6 +6,7 @@ interface SlotMachineStatsProps {
   isSpinning: boolean;
   onBetAmountChange: (nextBetAmount: number) => void | Promise<void>;
   onOpenLeaderboard: () => void;
+  onOpenPrizePage: () => void;
   onLogout: () => void;
   onSpin: () => void | Promise<void>;
   statusMessage: string;
@@ -24,6 +25,7 @@ export function SlotMachineStats({
   isSpinning,
   onBetAmountChange,
   onOpenLeaderboard,
+  onOpenPrizePage,
   onLogout,
   onSpin,
   statusMessage,
@@ -90,6 +92,9 @@ export function SlotMachineStats({
       </button>
       <button className={styles.exitButton} onClick={onOpenLeaderboard} type="button">
         Leaderboard
+      </button>
+      <button className={styles.exitButton} onClick={onOpenPrizePage} type="button">
+        Prize vault
       </button>
       <div className={styles.statusBanner}>{statusMessage}</div>
     </section>

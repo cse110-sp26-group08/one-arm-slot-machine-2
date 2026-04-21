@@ -2,8 +2,12 @@ export const SLOT_MACHINE_ROWS = 3;
 export const SLOT_MACHINE_COLUMNS = 3;
 export const DEFAULT_BET_AMOUNT = 25;
 export const DEFAULT_BALANCE = 1000;
+export const ENHANCED_LUCK_PRICE = 500;
+export const SNOW_THEME_PRICE = 250;
+export const ENHANCED_LUCK_DURATION_IN_MILLISECONDS = 60 * 60 * 1000;
 
 const _slotSymbols = ['seven', 'diamond', 'bar', 'cherry', 'bell', 'horseshoe', 'wild'] as const;
+const _slotPrizeIds = ['enhanced-luck', 'snow-theme'] as const;
 const paylineRows = [
   [0, 0, 0],
   [1, 1, 1],
@@ -20,6 +24,15 @@ const symbolWeights: Record<SlotSymbol, number> = {
   horseshoe: 7,
   wild: 3
 };
+const enhancedLuckSymbolWeights: Record<SlotSymbol, number> = {
+  seven: 8,
+  diamond: 10,
+  bar: 10,
+  cherry: 11,
+  bell: 8,
+  horseshoe: 7,
+  wild: 7
+};
 const symbolPayoutMultipliers: Record<SlotSymbol, Record<number, number>> = {
   seven: { 3: 12 },
   diamond: { 3: 9 },
@@ -32,6 +45,13 @@ const symbolPayoutMultipliers: Record<SlotSymbol, Record<number, number>> = {
 
 export type SlotSymbol = (typeof _slotSymbols)[number];
 export type SlotOutcome = 'loss' | 'near-miss' | 'win';
+export type SlotPrizeId = (typeof _slotPrizeIds)[number];
+export type WinCelebrationTheme = 'classic' | 'snow';
+
+export interface SlotPrizeInventory {
+  enhancedLuckExpiresAt: number | null;
+  snowThemeUnlocked: boolean;
+}
 
 export interface WinningLine {
   matchingCount: number;
@@ -51,7 +71,9 @@ export interface SlotMachineState {
   grid: SlotSymbol[][];
   lastPayout: number;
   outcome: SlotOutcome;
+  prizes: SlotPrizeInventory;
   stats: SlotMachineStats;
+  winCelebrationTheme: WinCelebrationTheme;
   winningLines: WinningLine[];
 }
 
@@ -91,12 +113,13 @@ export function spinSlotMachine(playerId: string) {
     throw new SlotMachineStateError('Current bet exceeds the remaining balance.');
   }
 
-  const spunGrid = createRandomGrid();
+  const spunGrid = createRandomGrid(resolveSymbolWeights(currentState));
   const evaluatedSpin = evaluateSpin(spunGrid, currentState.stats.currentBetAmount);
   const updatedState: SlotMachineState = {
     grid: spunGrid,
     lastPayout: evaluatedSpin.payout,
     outcome: evaluatedSpin.outcome,
+    prizes: resolvePrizeInventory(currentState.prizes),
     stats: {
       currentBetAmount: currentState.stats.currentBetAmount,
       numberOfSpins: currentState.stats.numberOfSpins + 1,
@@ -105,7 +128,56 @@ export function spinSlotMachine(playerId: string) {
         currentState.stats.currentBetAmount +
         evaluatedSpin.payout
     },
+    winCelebrationTheme: currentState.prizes.snowThemeUnlocked ? 'snow' : 'classic',
     winningLines: evaluatedSpin.winningLines
+  };
+
+  slotMachineStateByPlayer.set(playerId, updatedState);
+  return updatedState;
+}
+
+/**
+ * Purchases one of the available slot-machine prizes for the player.
+ *
+ * @param {string} playerId - Unique session or user identifier.
+ * @param {SlotPrizeId} prizeId - Prize identifier to purchase.
+ * @returns {SlotMachineState} Updated slot-machine state after the purchase.
+ */
+export function purchaseSlotMachinePrize(playerId: string, prizeId: SlotPrizeId) {
+  if (!_slotPrizeIds.includes(prizeId)) {
+    throw new SlotMachineStateError('Selected prize does not exist.');
+  }
+
+  const currentState = getSlotMachineState(playerId);
+  const resolvedPrizes = resolvePrizeInventory(currentState.prizes);
+  const prizePrice = resolvePrizePrice(prizeId);
+
+  if (prizePrice > currentState.stats.totalBalance) {
+    throw new SlotMachineStateError('Not enough balance to purchase that prize.');
+  }
+
+  if (prizeId === 'snow-theme' && resolvedPrizes.snowThemeUnlocked) {
+    throw new SlotMachineStateError('Snow celebration is already unlocked.');
+  }
+
+  const nextPrizes: SlotPrizeInventory =
+    prizeId === 'enhanced-luck'
+      ? {
+          ...resolvedPrizes,
+          enhancedLuckExpiresAt: Date.now() + ENHANCED_LUCK_DURATION_IN_MILLISECONDS
+        }
+      : {
+          ...resolvedPrizes,
+          snowThemeUnlocked: true
+        };
+  const updatedState: SlotMachineState = {
+    ...currentState,
+    prizes: nextPrizes,
+    stats: {
+      ...currentState.stats,
+      totalBalance: currentState.stats.totalBalance - prizePrice
+    },
+    winCelebrationTheme: nextPrizes.snowThemeUnlocked ? 'snow' : 'classic'
   };
 
   slotMachineStateByPlayer.set(playerId, updatedState);
@@ -149,14 +221,19 @@ export function setSlotMachineBetAmount(playerId: string, nextBetAmount: number)
  */
 export function createInitialSlotMachineState(): SlotMachineState {
   return {
-    grid: createRandomGrid(),
+    grid: createRandomGrid(symbolWeights),
     lastPayout: 0,
     outcome: 'loss',
+    prizes: {
+      enhancedLuckExpiresAt: null,
+      snowThemeUnlocked: false
+    },
     stats: {
       totalBalance: DEFAULT_BALANCE,
       currentBetAmount: DEFAULT_BET_AMOUNT,
       numberOfSpins: 0
     },
+    winCelebrationTheme: 'classic',
     winningLines: []
   };
 }
@@ -221,9 +298,9 @@ export function calculatePayout(grid: SlotSymbol[][], betAmount: number) {
  *
  * @returns {SlotSymbol[][]} Randomized symbol grid.
  */
-export function createRandomGrid() {
+export function createRandomGrid(weightTable: Record<SlotSymbol, number> = symbolWeights) {
   return Array.from({ length: SLOT_MACHINE_ROWS }, () =>
-    Array.from({ length: SLOT_MACHINE_COLUMNS }, () => chooseWeightedSymbol())
+    Array.from({ length: SLOT_MACHINE_COLUMNS }, () => chooseWeightedSymbol(weightTable))
   );
 }
 
@@ -283,11 +360,36 @@ function hasNearMiss(grid: SlotSymbol[][]) {
  *
  * @returns {SlotSymbol} Weighted random symbol.
  */
-function chooseWeightedSymbol() {
-  const weightedPool = Object.entries(symbolWeights).flatMap(([symbol, weight]) =>
+function chooseWeightedSymbol(weightTable: Record<SlotSymbol, number>) {
+  const weightedPool = Object.entries(weightTable).flatMap(([symbol, weight]) =>
     Array.from({ length: weight }, () => symbol as SlotSymbol)
   );
   const randomIndex = Math.floor(Math.random() * weightedPool.length);
 
   return weightedPool[randomIndex];
+}
+
+function resolvePrizeInventory(prizes: SlotPrizeInventory) {
+  if (prizes.enhancedLuckExpiresAt && prizes.enhancedLuckExpiresAt <= Date.now()) {
+    return {
+      ...prizes,
+      enhancedLuckExpiresAt: null
+    };
+  }
+
+  return prizes;
+}
+
+function resolveSymbolWeights(state: SlotMachineState) {
+  return resolvePrizeInventory(state.prizes).enhancedLuckExpiresAt
+    ? enhancedLuckSymbolWeights
+    : symbolWeights;
+}
+
+function resolvePrizePrice(prizeId: SlotPrizeId) {
+  if (prizeId === 'enhanced-luck') {
+    return ENHANCED_LUCK_PRICE;
+  }
+
+  return SNOW_THEME_PRICE;
 }

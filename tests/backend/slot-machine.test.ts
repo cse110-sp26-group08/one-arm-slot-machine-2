@@ -6,12 +6,16 @@ import {
   SLOT_MACHINE_COLUMNS,
   SLOT_MACHINE_ROWS,
   DEFAULT_BALANCE,
+  ENHANCED_LUCK_DURATION_IN_MILLISECONDS,
+  ENHANCED_LUCK_PRICE,
+  SNOW_THEME_PRICE,
   SlotMachineStateError,
   calculatePayout,
   createInitialSlotMachineState,
   createRandomGrid,
   evaluateSpin,
   getSlotMachineState,
+  purchaseSlotMachinePrize,
   setSlotMachineBetAmount,
   spinSlotMachine
 } from '../../backend/services/slot-machine.service.js';
@@ -110,5 +114,35 @@ test('spinSlotMachine rejects a spin when the current bet is higher than the bal
     (error: unknown) =>
       error instanceof SlotMachineStateError &&
       error.message === 'Current bet exceeds the remaining balance.'
+  );
+});
+
+test('purchaseSlotMachinePrize deducts balance and unlocks snow celebration', () => {
+  const purchasedState = purchaseSlotMachinePrize('player-snow-prize', 'snow-theme');
+
+  assert.equal(purchasedState.prizes.snowThemeUnlocked, true);
+  assert.equal(purchasedState.stats.totalBalance, DEFAULT_BALANCE - SNOW_THEME_PRICE);
+  assert.equal(purchasedState.winCelebrationTheme, 'snow');
+});
+
+test('purchaseSlotMachinePrize activates enhanced luck for one hour', () => {
+  const beforePurchaseTimestamp = Date.now();
+  const purchasedState = purchaseSlotMachinePrize('player-luck-prize', 'enhanced-luck');
+
+  assert.equal(purchasedState.stats.totalBalance, DEFAULT_BALANCE - ENHANCED_LUCK_PRICE);
+  assert.ok(
+    (purchasedState.prizes.enhancedLuckExpiresAt ?? 0) >=
+      beforePurchaseTimestamp + ENHANCED_LUCK_DURATION_IN_MILLISECONDS - 1000
+  );
+});
+
+test('purchaseSlotMachinePrize rejects duplicate snow theme purchases', () => {
+  purchaseSlotMachinePrize('player-duplicate-snow', 'snow-theme');
+
+  assert.throws(
+    () => purchaseSlotMachinePrize('player-duplicate-snow', 'snow-theme'),
+    (error: unknown) =>
+      error instanceof SlotMachineStateError &&
+      error.message === 'Snow celebration is already unlocked.'
   );
 });
