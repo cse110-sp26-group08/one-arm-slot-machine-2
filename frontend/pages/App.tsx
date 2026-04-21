@@ -4,7 +4,10 @@ import { AuthStatusScreen } from '../components/auth/AuthStatusScreen.js';
 import { checkActiveSession, clearStoredSession, type AuthenticatedUser, type AuthSession } from '../services/auth-client.js';
 import styles from './App.module.css';
 import { HomePage } from './HomePage.js';
+import { LeaderboardPage } from './LeaderboardPage.js';
 import { LoginPage } from './LoginPage.js';
+
+type AppView = 'leaderboard' | 'machine';
 
 /**
  * Root application shell.
@@ -14,6 +17,8 @@ import { LoginPage } from './LoginPage.js';
 export function App() {
   const [authenticatedUser, setAuthenticatedUser] = useState<AuthenticatedUser | null>(null);
   const [isCheckingSession, setIsCheckingSession] = useState(true);
+  const [currentBalance, setCurrentBalance] = useState<number | null>(null);
+  const [currentView, setCurrentView] = useState<AppView>('machine');
 
   useEffect(() => {
     void hydrateSession();
@@ -30,11 +35,26 @@ export function App() {
 
   function handleAuthenticated(session: AuthSession) {
     setAuthenticatedUser(session.user);
+    setCurrentView('machine');
   }
 
   function handleLogout() {
     clearStoredSession();
     setAuthenticatedUser(null);
+    setCurrentBalance(null);
+    setCurrentView('machine');
+  }
+
+  function handleOpenLeaderboard(nextBalance: number | null = null) {
+    if (typeof nextBalance === 'number') {
+      setCurrentBalance(nextBalance);
+    }
+
+    setCurrentView('leaderboard');
+  }
+
+  function handleCloseLeaderboard() {
+    setCurrentView('machine');
   }
 
   if (isCheckingSession) {
@@ -45,9 +65,25 @@ export function App() {
     );
   }
 
-  if (!authenticatedUser) {
-    return <LoginPage onAuthenticated={handleAuthenticated} />;
+  if (currentView === 'leaderboard') {
+    return (
+      <LeaderboardPage
+        currentBalance={currentBalance}
+        currentUser={authenticatedUser}
+        onBack={handleCloseLeaderboard}
+      />
+    );
   }
 
-  return <HomePage onLogout={handleLogout} user={authenticatedUser} />;
+  if (!authenticatedUser) {
+    return <LoginPage onAuthenticated={handleAuthenticated} onOpenLeaderboard={() => handleOpenLeaderboard()} />;
+  }
+
+  return (
+    <HomePage
+      onLogout={handleLogout}
+      onOpenLeaderboard={(nextBalance) => handleOpenLeaderboard(nextBalance)}
+      user={authenticatedUser}
+    />
+  );
 }

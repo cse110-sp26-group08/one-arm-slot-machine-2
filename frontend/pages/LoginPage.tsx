@@ -16,6 +16,7 @@ import { SignupForm } from '../components/auth/SignupForm.js';
 
 interface LoginPageProps {
   onAuthenticated: (session: AuthSession) => void;
+  onOpenLeaderboard: () => void;
 }
 
 /**
@@ -25,7 +26,7 @@ interface LoginPageProps {
  *
  * @returns {JSX.Element} Login and signup page for the slot machine app.
  */
-export function LoginPage({ onAuthenticated }: LoginPageProps) {
+export function LoginPage({ onAuthenticated, onOpenLeaderboard }: LoginPageProps) {
   const [mode, setMode] = useState<FormMode>('login');
   const [loginForm, setLoginForm] = useState(initialLoginForm);
   const [signupForm, setSignupForm] = useState(initialSignupForm);
@@ -108,6 +109,7 @@ export function LoginPage({ onAuthenticated }: LoginPageProps) {
         feedbackMessage={feedbackMessage}
         isSubmitting={isSubmitting}
         mode={mode}
+        onLeaderboardOpen={onOpenLeaderboard}
         onGuestEntry={handleGuestEntry}
         onModeChange={setMode}
       >

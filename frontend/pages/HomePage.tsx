@@ -17,6 +17,7 @@ import type { AuthenticatedUser } from '../services/auth-client.js';
 import styles from './HomePage.module.css';
 
 interface HomePageProps {
+  onOpenLeaderboard: (currentBalance: number) => void;
   onLogout: () => void;
   user: AuthenticatedUser;
 }
@@ -31,7 +32,7 @@ const celebrationDurationInMilliseconds = 3400;
  * @param {HomePageProps} props - Home page props.
  * @returns {JSX.Element} Home page UI.
  */
-export function HomePage({ onLogout, user }: HomePageProps) {
+export function HomePage({ onLogout, onOpenLeaderboard, user }: HomePageProps) {
   const [slotMachineState, setSlotMachineState] = useState<SlotMachineState | null>(null);
   const [displayedGrid, setDisplayedGrid] = useState<SlotMachineState['grid'] | null>(null);
   const [isSpinning, setIsSpinning] = useState(false);
@@ -164,6 +165,7 @@ export function HomePage({ onLogout, user }: HomePageProps) {
         isUpdatingBet={isUpdatingBet}
         isSpinning={isSpinning}
         onBetAmountChange={handleBetAmountChange}
+        onOpenLeaderboard={() => onOpenLeaderboard(slotMachineState.stats.totalBalance)}
         onLogout={onLogout}
         onSpin={handleSpin}
         slotMachineState={slotMachineState}
