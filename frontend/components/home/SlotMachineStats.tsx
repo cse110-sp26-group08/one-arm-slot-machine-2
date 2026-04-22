@@ -116,6 +116,16 @@ export function SlotMachineStats({
           />
         </div>
       </div>
+      <div className={styles.compassColumn} aria-hidden="true">
+        <div className={styles.compassIcon}>
+          <span className={styles.compassNeedle} />
+          <span className={styles.compassCenter} />
+          <span className={styles.compassLetterNorth}>N</span>
+          <span className={styles.compassLetterEast}>E</span>
+          <span className={styles.compassLetterSouth}>S</span>
+          <span className={styles.compassLetterWest}>W</span>
+        </div>
+      </div>
       <div className={styles.statsColumn}>
         <span className={styles.statsLabel}>Number of spins</span>
         <strong className={styles.statsValue}>{slotMachineState.stats.numberOfSpins}</strong>

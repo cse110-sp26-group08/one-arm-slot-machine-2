@@ -53,6 +53,13 @@ export function WinCelebration({
           );
         })}
       </div>
+      <div className={styles.celebrationShipScene} aria-hidden="true">
+        <div className={styles.celebrationWave} />
+        <div className={styles.celebrationShip}>
+          <span className={styles.shipSail} />
+          <span className={styles.shipHull} />
+        </div>
+      </div>
       <div className={styles.celebrationCard}>
         <p className={styles.celebrationEyebrow}>Jackpot lights</p>
         <h2 className={styles.celebrationTitle}>You win!</h2>
