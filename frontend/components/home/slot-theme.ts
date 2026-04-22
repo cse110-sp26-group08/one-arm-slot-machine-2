@@ -1,5 +1,11 @@
 import type { SlotSymbol } from '../../services/slot-machine-client.js';
 
+export interface SlotSymbolDisplay {
+  alt: string;
+  assetUrl?: string;
+  emblemText?: string;
+}
+
 export interface SlotMachineTheme {
   accentLabel: string;
   jackpotLabels: Array<{
@@ -8,36 +14,49 @@ export interface SlotMachineTheme {
   }>;
   machineName: string;
   panelClassName: string;
-  symbolLabelMap: Record<SlotSymbol, string>;
-  symbolMap: Record<SlotSymbol, string>;
+  symbolDisplayMap: Record<SlotSymbol, SlotSymbolDisplay>;
 }
 
-export const classicGoldTheme: SlotMachineTheme = {
-  machineName: 'Marquee Gold',
-  accentLabel: 'Floor one',
-  panelClassName: 'classicGold',
+const resolveAssetUrl = (relativePath: string) => new URL(relativePath, import.meta.url).href;
+
+export const pirateTreasureTheme: SlotMachineTheme = {
+  machineName: 'Blackwater Bounty',
+  accentLabel: 'Treasure deck',
+  panelClassName: 'pirateTreasure',
   jackpotLabels: [
-    { name: 'Grand', amount: '10000.00' },
-    { name: 'Major', amount: '4000.00' },
-    { name: 'Minor', amount: '1000.00' },
-    { name: 'Mini', amount: '200.00' }
+    { name: 'Captain', amount: '10000.00' },
+    { name: 'Fleet', amount: '4000.00' },
+    { name: 'Booty', amount: '1000.00' },
+    { name: 'Map', amount: '200.00' }
   ],
-  symbolLabelMap: {
-    seven: 'Lucky seven',
-    diamond: 'Lava orb',
-    bar: 'Hot stripe',
-    cherry: 'Cherry burst',
-    bell: 'Golden bell',
-    horseshoe: 'Royal charm',
-    wild: 'Wild queen'
-  },
-  symbolMap: {
-    seven: '\u0037\uFE0F\u20E3',
-    diamond: '\uD83C\uDF0B',
-    bar: '\u2728',
-    cherry: '\uD83C\uDF52',
-    bell: '\uD83D\uDD14',
-    horseshoe: '\uD83D\uDC51',
-    wild: '\uD83D\uDC78'
+  symbolDisplayMap: {
+    seven: {
+      alt: 'Treasure map scroll',
+      assetUrl: resolveAssetUrl('../../../assets/scroll_icon.png')
+    },
+    diamond: {
+      alt: 'Gold doubloon',
+      assetUrl: resolveAssetUrl('../../../assets/coin_icon.png')
+    },
+    bar: {
+      alt: 'Pirate hook',
+      assetUrl: resolveAssetUrl('../../../assets/hook_icon.png')
+    },
+    cherry: {
+      alt: 'Sea potion',
+      assetUrl: resolveAssetUrl('../../../assets/potion_icon.png')
+    },
+    bell: {
+      alt: 'Powder barrel',
+      assetUrl: resolveAssetUrl('../../../assets/barrel_icon.png')
+    },
+    horseshoe: {
+      alt: 'Cannon bomb',
+      assetUrl: resolveAssetUrl('../../../assets/bomb_icon.png')
+    },
+    wild: {
+      alt: 'Wild compass emblem',
+      emblemText: 'WILD'
+    }
   }
 };

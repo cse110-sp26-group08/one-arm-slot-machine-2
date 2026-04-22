@@ -23,6 +23,8 @@ export function ReelCell({
   symbol,
   theme
 }: ReelCellProps) {
+  const symbolDisplay = theme.symbolDisplayMap[symbol];
+
   return (
     <div
       className={[
@@ -32,8 +34,18 @@ export function ReelCell({
       ].join(' ')}
       style={{ animationDelay: `${spinDelayMilliseconds}ms` }}
     >
-      <span className={styles.reelSymbol}>{theme.symbolMap[symbol]}</span>
-      <span className={styles.reelLabel}>{theme.symbolLabelMap[symbol]}</span>
+      {symbolDisplay.assetUrl ? (
+        <img
+          alt={symbolDisplay.alt}
+          className={styles.reelAsset}
+          draggable="false"
+          src={symbolDisplay.assetUrl}
+        />
+      ) : (
+        <span aria-label={symbolDisplay.alt} className={styles.reelEmblem} role="img">
+          {symbolDisplay.emblemText}
+        </span>
+      )}
     </div>
   );
 }

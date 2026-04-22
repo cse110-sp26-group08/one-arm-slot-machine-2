@@ -11,7 +11,7 @@ interface SlotMachineGridProps {
 }
 
 /**
- * Renders the 3x5 slot-machine reel grid.
+ * Renders the 3x3 slot-machine reel grid.
  *
  * @param {SlotMachineGridProps} props - Grid props.
  * @returns {JSX.Element} Slot-machine grid UI.
@@ -71,17 +71,17 @@ export function SlotMachineGrid({
       </div>
       <div className={styles.machineMeta}>
         <div className={styles.metaBlock}>
-          <span className={styles.metaLabel}>Paylines</span>
-          <span className={styles.metaValue}>5 active lines across a 3x3 grid</span>
+          <span className={styles.metaLabel}>Treasure lines</span>
+          <span className={styles.metaValue}>Five paylines cross the deck from left to right.</span>
         </div>
         <div className={styles.metaBlock}>
-          <span className={styles.metaLabel}>Rules</span>
-          <span className={styles.metaValue}>3+ matches from the left. Wilds substitute.</span>
+          <span className={styles.metaLabel}>Captain's rules</span>
+          <span className={styles.metaValue}>Three matches cash out. The wild compass stands in for any icon.</span>
         </div>
         <div className={styles.metaBlock}>
-          <span className={styles.metaLabel}>Animation</span>
+          <span className={styles.metaLabel}>Sea state</span>
           <span className={styles.metaValue}>
-            {isSpinning ? 'Columns stop one by one.' : 'Idle glow keeps focus on the play button.'}
+            {isSpinning ? 'The reels pitch and settle one mast at a time.' : 'Lantern glow holds the wheel at the center of the deck.'}
           </span>
         </div>
       </div>

@@ -4,7 +4,7 @@ import { createCelebrationParticles, getWinAnnouncement } from '../components/ho
 import { SlotMachineGrid } from '../components/home/SlotMachineGrid.js';
 import { SlotMachineStats } from '../components/home/SlotMachineStats.js';
 import { WinCelebration } from '../components/home/WinCelebration.js';
-import { classicGoldTheme } from '../components/home/slot-theme.js';
+import { pirateTreasureTheme } from '../components/home/slot-theme.js';
 import { playWinJingle } from '../services/celebration-audio.js';
 import {
   fetchSlotMachineState,
@@ -45,7 +45,9 @@ export function HomePage({
   const [displayedGrid, setDisplayedGrid] = useState<SlotMachineState['grid'] | null>(null);
   const [isSpinning, setIsSpinning] = useState(false);
   const [isUpdatingBet, setIsUpdatingBet] = useState(false);
-  const [statusMessage, setStatusMessage] = useState('No scroll, five paylines, and a bright center spin button ready to go.');
+  const [statusMessage, setStatusMessage] = useState(
+    'The pirate deck is loaded. Five treasure lines are ready whenever you spin.'
+  );
   const [isCelebratingWin, setIsCelebratingWin] = useState(false);
   const [winAnnouncement, setWinAnnouncement] = useState('');
   const celebrationTimeoutRef = useRef<number | null>(null);
@@ -82,7 +84,7 @@ export function HomePage({
 
     dismissCelebration();
     setIsSpinning(true);
-    setStatusMessage('Reels are spinning. They will stop from left to right to build tension.');
+    setStatusMessage('The reels are rolling through the tide and will settle from port to starboard.');
     const previewInterval = window.setInterval(() => {
       setDisplayedGrid(createPreviewGrid());
     }, 90);
@@ -172,7 +174,7 @@ export function HomePage({
         displayedGrid={displayedGrid}
         isSpinning={isSpinning}
         slotMachineState={slotMachineState}
-        theme={classicGoldTheme}
+        theme={pirateTreasureTheme}
       />
       <SlotMachineStats
         isUpdatingBet={isUpdatingBet}
@@ -239,7 +241,7 @@ function resolveOutcomeMessage(state: SlotMachineState) {
     return 'Near miss. Two symbols lined up early, but the payline broke before a win.';
   }
 
-  return 'No payout this round. Losses move fast so the next spin stays front and center.';
+  return 'No treasure this round. Reset the wheel and send the next crew across the reels.';
 }
 
 /**
