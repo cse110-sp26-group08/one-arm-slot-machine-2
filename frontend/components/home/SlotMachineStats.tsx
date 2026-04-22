@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react';
+
 import styles from '../../pages/HomePage.module.css';
 import type { SlotMachineState } from '../../services/slot-machine-client.js';
 
@@ -32,16 +34,39 @@ export function SlotMachineStats({
   slotMachineState,
   userDisplayName
 }: SlotMachineStatsProps) {
-  const canIncreaseBet =
-    !isSpinning &&
-    !isUpdatingBet &&
-    slotMachineState.stats.currentBetAmount < slotMachineState.stats.totalBalance;
-  const canDecreaseBet =
-    !isSpinning && !isUpdatingBet && slotMachineState.stats.currentBetAmount > 1;
+  const [betInputValue, setBetInputValue] = useState(String(slotMachineState.stats.currentBetAmount));
   const canSpin =
     !isSpinning &&
     !isUpdatingBet &&
     slotMachineState.stats.currentBetAmount <= slotMachineState.stats.totalBalance;
+  const isBetInputDisabled = isSpinning || isUpdatingBet;
+
+  useEffect(() => {
+    setBetInputValue(String(slotMachineState.stats.currentBetAmount));
+  }, [slotMachineState.stats.currentBetAmount]);
+
+  async function commitBetAmountChange() {
+    const trimmedValue = betInputValue.trim();
+
+    if (!trimmedValue) {
+      setBetInputValue(String(slotMachineState.stats.currentBetAmount));
+      return;
+    }
+
+    const parsedBetAmount = Number.parseInt(trimmedValue, 10);
+
+    if (Number.isNaN(parsedBetAmount)) {
+      setBetInputValue(String(slotMachineState.stats.currentBetAmount));
+      return;
+    }
+
+    if (parsedBetAmount === slotMachineState.stats.currentBetAmount) {
+      setBetInputValue(String(parsedBetAmount));
+      return;
+    }
+
+    await onBetAmountChange(parsedBetAmount);
+  }
 
   return (
     <section className={styles.statsBar}>
@@ -64,23 +89,31 @@ export function SlotMachineStats({
       <div className={styles.statsColumn}>
         <span className={styles.statsLabel}>Current bet</span>
         <div className={styles.betControl}>
-          <button
-            className={styles.betStepper}
-            disabled={!canDecreaseBet}
-            onClick={() => void onBetAmountChange(slotMachineState.stats.currentBetAmount - 1)}
-            type="button"
-          >
-            -
-          </button>
-          <strong className={styles.statsValue}>{slotMachineState.stats.currentBetAmount}</strong>
-          <button
-            className={styles.betStepper}
-            disabled={!canIncreaseBet}
-            onClick={() => void onBetAmountChange(slotMachineState.stats.currentBetAmount + 1)}
-            type="button"
-          >
-            +
-          </button>
+          <input
+            aria-label="Current bet amount"
+            className={styles.betInput}
+            disabled={isBetInputDisabled}
+            inputMode="numeric"
+            min="1"
+            onBlur={() => {
+              void commitBetAmountChange();
+            }}
+            onChange={(event) => {
+              setBetInputValue(event.target.value.replace(/[^\d]/g, ''));
+            }}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') {
+                event.currentTarget.blur();
+              }
+
+              if (event.key === 'Escape') {
+                setBetInputValue(String(slotMachineState.stats.currentBetAmount));
+                event.currentTarget.blur();
+              }
+            }}
+            type="text"
+            value={betInputValue}
+          />
         </div>
       </div>
       <div className={styles.statsColumn}>
