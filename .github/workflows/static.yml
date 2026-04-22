@@ -27,8 +27,6 @@ jobs:
         run: |
           # Remove the existing index.html so it doesn't take priority
           rm index.html
-          # Rename README to index.md so Jekyll builds it as the home page
-          mv README.md index.md
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
