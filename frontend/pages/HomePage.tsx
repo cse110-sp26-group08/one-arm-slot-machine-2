@@ -47,6 +47,7 @@ const previewSymbols: SlotSymbol[] = ['seven', 'diamond', 'bar', 'cherry', 'bell
 const revealDelayInMilliseconds = 190;
 const celebrationDurationInMilliseconds = 3400;
 const settleAnimationDurationInMilliseconds = 420;
+const reelStripSymbolCount = 12;
 
 /**
  * Home page containing the connected slot-machine experience.
@@ -66,6 +67,7 @@ export function HomePage({
   const [isSpinning, setIsSpinning] = useState(false);
   const [isUpdatingBet, setIsUpdatingBet] = useState(false);
   const [settlingColumnIndexes, setSettlingColumnIndexes] = useState<number[]>([]);
+  const [spinningColumnStrips, setSpinningColumnStrips] = useState<SlotSymbol[][]>([]);
   const [audioSettings, setAudioSettings] = useState<AudioSettings>(() => loadAudioSettings());
   const [statusMessage, setStatusMessage] = useState(
     'The pirate deck is loaded. Five treasure lines are ready whenever you spin.'
@@ -133,6 +135,7 @@ export function HomePage({
     setSlotMachineState(currentState);
     setDisplayedGrid(currentState.grid);
     setSettlingColumnIndexes([]);
+    setSpinningColumnStrips([]);
     onStateBalanceChange(currentState.stats.totalBalance);
   }
 
@@ -144,10 +147,8 @@ export function HomePage({
     dismissCelebration();
     await initializePirateAudio(audioSettings, slotMachineState.prizes.selectedSoundtrackId);
     setIsSpinning(true);
+    setSpinningColumnStrips(createPreviewColumnStrips(displayedGrid[0]?.length ?? 3, reelStripSymbolCount));
     setStatusMessage('The reels are rolling through the tide and will settle from port to starboard.');
-    const previewInterval = window.setInterval(() => {
-      setDisplayedGrid(createPreviewGrid());
-    }, 90);
     const expectedSpinDuration =
       nextRevealDurationInMilliseconds((displayedGrid[0]?.length ?? 3), revealDelayInMilliseconds) +
       220;
@@ -155,8 +156,6 @@ export function HomePage({
 
     try {
       const nextState = await spinSlotMachine();
-
-      window.clearInterval(previewInterval);
 
       for (let columnIndex = 0; columnIndex < nextState.grid[0].length; columnIndex += 1) {
         await pause(revealDelayInMilliseconds);
@@ -190,9 +189,9 @@ export function HomePage({
       setStatusMessage(resolveActionErrorMessage(error, 'Spin could not start.'));
       await hydrateSlotMachineState();
     } finally {
-      window.clearInterval(previewInterval);
       stopWheelSpinSound();
       setIsSpinning(false);
+      setSpinningColumnStrips([]);
     }
   }
 
@@ -261,6 +260,7 @@ export function HomePage({
         displayedGrid={displayedGrid}
         isSpinning={isSpinning}
         settlingColumnIndexes={settlingColumnIndexes}
+        spinningColumnStrips={spinningColumnStrips}
         slotMachineState={slotMachineState}
         theme={pirateTreasureTheme}
       />
@@ -311,14 +311,16 @@ export function HomePage({
 }
 
 /**
- * Creates a random visual grid used during reel-spin animation.
+ * Creates scrolling symbol strips for each reel while the backend spin resolves.
  *
- * @returns {SlotMachineState['grid']} Temporary animation grid.
+ * @param {number} columnCount - Number of visible reel columns.
+ * @param {number} symbolCountPerColumn - Number of symbols to place in each looping strip.
+ * @returns {SlotSymbol[][]} Reel-strip symbols for each column.
  */
-function createPreviewGrid(): SlotMachineState['grid'] {
-  return Array.from({ length: 3 }, () =>
+function createPreviewColumnStrips(columnCount: number, symbolCountPerColumn: number) {
+  return Array.from({ length: columnCount }, () =>
     Array.from(
-      { length: 3 },
+      { length: symbolCountPerColumn },
       () => previewSymbols[Math.floor(Math.random() * previewSymbols.length)]
     )
   );

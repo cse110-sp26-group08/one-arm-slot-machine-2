@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { createCelebrationParticles, getWinAnnouncement } from '../../frontend/components/home/celebration.js';
+import {
+  createCelebrationParticles,
+  getCelebrationEyebrow,
+  getCelebrationHeadline,
+  getWinAnnouncement
+} from '../../frontend/components/home/celebration.js';
 import type { SlotMachineState } from '../../frontend/services/slot-machine-client.js';
 
 test('createCelebrationParticles builds classic confetti with bounded values', () => {
@@ -53,4 +58,16 @@ test('getWinAnnouncement summarizes the payout and winning lines', () => {
   };
 
   assert.equal(getWinAnnouncement(winningState), 'You win! 1 payline paid out 250.');
+});
+
+test('getCelebrationHeadline escalates the overlay headline by win tier', () => {
+  assert.equal(getCelebrationHeadline('win'), 'You win!');
+  assert.equal(getCelebrationHeadline('big-win'), 'Big win!');
+  assert.equal(getCelebrationHeadline('jackpot'), 'Jackpot!');
+});
+
+test('getCelebrationEyebrow keeps a distinct accent label for larger wins', () => {
+  assert.equal(getCelebrationEyebrow('win'), 'Jackpot lights');
+  assert.equal(getCelebrationEyebrow('big-win'), 'High tide payout');
+  assert.equal(getCelebrationEyebrow('jackpot'), 'Treasure vault open');
 });
