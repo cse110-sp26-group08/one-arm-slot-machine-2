@@ -87,11 +87,27 @@
 }
 
 .marqueeItem {
+  min-width: 110px;
   padding: 10px 14px;
   border: 1px solid rgba(255, 214, 153, 0.2);
   color: #ffde9d;
   background: rgba(255, 248, 220, 0.06);
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  text-align: center;
   animation: pulseGlow 3.6s ease-in-out infinite;
+}
+
+.marqueeIcon {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+}
+
+.marqueeLabel {
+  font-size: 0.88rem;
+  line-height: 1.2;
 }
 
 .marqueeItem:nth-child(2) {

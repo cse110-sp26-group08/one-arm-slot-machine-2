@@ -1,4 +1,5 @@
 import styles from '../../pages/App.module.css';
+import { authAccessModeHighlights, loginMarqueeSymbols } from './auth-content.js';
 import type { FormMode } from './auth-types.js';
 
 interface AuthShellProps {
@@ -37,10 +38,12 @@ export function AuthShell({
           </p>
         </div>
         <div className={styles.marqueeStrip} aria-hidden="true">
-          <span className={styles.marqueeItem}>777</span>
-          <span className={styles.marqueeItem}>BAR</span>
-          <span className={styles.marqueeItem}>CHERRY</span>
-          <span className={styles.marqueeItem}>JACKPOT</span>
+          {loginMarqueeSymbols.map((symbolDisplay) => (
+            <span className={styles.marqueeItem} key={symbolDisplay.alt}>
+              <img alt="" className={styles.marqueeIcon} src={symbolDisplay.assetUrl} />
+              <span className={styles.marqueeLabel}>{symbolDisplay.alt}</span>
+            </span>
+          ))}
         </div>
       </section>
 
@@ -49,9 +52,9 @@ export function AuthShell({
           <p className={styles.eyebrow}>Access modes</p>
           <h2 className={styles.sectionTitle}>Front-of-house now, full casino later.</h2>
           <ul className={styles.featureList}>
-            <li>Email login with cached session restore on this device</li>
-            <li>Signup flow with confirm password, date of birth, and captcha prompt</li>
-            <li>Guest lane for players who want a quick look first</li>
+            {authAccessModeHighlights.map((highlight) => (
+              <li key={highlight}>{highlight}</li>
+            ))}
           </ul>
           <p className={styles.feedbackBanner}>{feedbackMessage}</p>
         </aside>
