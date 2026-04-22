@@ -87,7 +87,6 @@ export function App() {
     return (
       <PrizePage
         currentBalance={currentBalance}
-        currentUser={authenticatedUser}
         onBack={handleCloseLeaderboard}
         onPrizePurchased={(nextBalance) => setCurrentBalance(nextBalance)}
       />

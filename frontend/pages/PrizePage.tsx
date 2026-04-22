@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 
-import type { AuthenticatedUser } from '../services/auth-client.js';
 import {
   ENHANCED_LUCK_DURATION_IN_MILLISECONDS,
   ENHANCED_LUCK_PRICE,
@@ -9,11 +8,11 @@ import {
   SOUNDTRACK_PRICE,
   type PrizeCatalogEntry
 } from '../services/prize-client.js';
+import { fetchSlotMachineState } from '../services/slot-machine-client.js';
 import styles from './PrizePage.module.css';
 
 interface PrizePageProps {
   currentBalance: number | null;
-  currentUser: AuthenticatedUser | null;
   onBack: () => void;
   onPrizePurchased: (nextBalance: number) => void;
 }
@@ -26,23 +25,35 @@ interface PrizePageProps {
  */
 export function PrizePage({
   currentBalance,
-  currentUser,
   onBack,
   onPrizePurchased
 }: PrizePageProps) {
   const [catalog, setCatalog] = useState<PrizeCatalogEntry[]>([]);
+  const [availableBalance, setAvailableBalance] = useState(currentBalance ?? 0);
   const [feedbackMessage, setFeedbackMessage] = useState(
     'Buy a short luck boost or unlock extra pirate soundtracks with guest balance.'
   );
   const [isPurchasingPrize, setIsPurchasingPrize] = useState(false);
+  const [ownedPrizeIds, setOwnedPrizeIds] = useState<Set<PrizeCatalogEntry['id']>>(new Set());
 
   useEffect(() => {
-    void loadCatalog();
+    void loadVault();
   }, []);
 
-  async function loadCatalog() {
-    const nextCatalog = await fetchPrizeCatalog();
+  async function loadVault() {
+    const [nextCatalog, slotMachineState] = await Promise.all([
+      fetchPrizeCatalog(),
+      fetchSlotMachineState()
+    ]);
+
     setCatalog(nextCatalog);
+    setAvailableBalance(slotMachineState.stats.totalBalance);
+    setOwnedPrizeIds(
+      new Set<PrizeCatalogEntry['id']>([
+        ...slotMachineState.prizes.ownedSoundtrackIds,
+        ...(slotMachineState.prizes.enhancedLuckExpiresAt ? (['enhanced-luck'] as const) : [])
+      ])
+    );
   }
 
   async function handlePurchase(prizeId: PrizeCatalogEntry['id']) {
@@ -51,6 +62,13 @@ export function PrizePage({
     try {
       const nextState = await purchaseSlotMachinePrize(prizeId);
       onPrizePurchased(nextState.stats.totalBalance);
+      setAvailableBalance(nextState.stats.totalBalance);
+      setOwnedPrizeIds(
+        new Set<PrizeCatalogEntry['id']>([
+          ...nextState.prizes.ownedSoundtrackIds,
+          ...(nextState.prizes.enhancedLuckExpiresAt ? (['enhanced-luck'] as const) : [])
+        ])
+      );
       setFeedbackMessage(
         prizeId === 'enhanced-luck'
           ? 'Enhanced luck is active for the next hour.'
@@ -79,7 +97,7 @@ export function PrizePage({
         <div className={styles.heroRail}>
           <div className={styles.balanceCard}>
             <span className={styles.balanceLabel}>Available balance</span>
-            <strong className={styles.balanceValue}>{currentBalance ?? 0}</strong>
+            <strong className={styles.balanceValue}>{availableBalance}</strong>
           </div>
           <button className={styles.backButton} onClick={onBack} type="button">
             Return to machine
@@ -89,7 +107,8 @@ export function PrizePage({
 
       <section className={styles.catalogGrid}>
         {catalog.map((catalogEntry) => {
-          const canAffordPrize = (currentBalance ?? 0) >= catalogEntry.price;
+          const canAffordPrize = availableBalance >= catalogEntry.price;
+          const alreadyOwned = ownedPrizeIds.has(catalogEntry.id);
 
           return (
             <article className={styles.prizeCard} key={catalogEntry.id}>
@@ -103,11 +122,17 @@ export function PrizePage({
                 <strong className={styles.prizePrice}>{catalogEntry.price}</strong>
                 <button
                   className={styles.buyButton}
-                  disabled={!canAffordPrize || isPurchasingPrize || !currentUser}
+                  disabled={!canAffordPrize || isPurchasingPrize || alreadyOwned}
                   onClick={() => void handlePurchase(catalogEntry.id)}
                   type="button"
                 >
-                  {isPurchasingPrize ? 'Buying...' : canAffordPrize ? 'Buy prize' : 'Need more balance'}
+                  {alreadyOwned
+                    ? 'Owned'
+                    : isPurchasingPrize
+                      ? 'Buying...'
+                      : canAffordPrize
+                        ? 'Buy prize'
+                        : 'Need more balance'}
                 </button>
               </div>
             </article>
