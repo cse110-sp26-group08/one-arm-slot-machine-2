@@ -582,7 +582,7 @@
 .audioDock {
   grid-column: 1 / span 2;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
 }
 
@@ -605,6 +605,15 @@
   border-radius: 999px;
   background: linear-gradient(180deg, rgba(33, 94, 103, 0.98), rgba(12, 48, 56, 0.98));
   color: #ffeab6;
+}
+
+.soundtrackSelect {
+  min-height: 38px;
+  padding: 0 10px;
+  border: 2px solid rgba(232, 185, 90, 0.92);
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(33, 94, 103, 0.98), rgba(12, 48, 56, 0.98));
+  color: #fff7d6;
 }
 
 .volumeSlider {

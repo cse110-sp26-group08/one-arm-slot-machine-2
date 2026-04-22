@@ -8,7 +8,7 @@ import {
   DEFAULT_BALANCE,
   ENHANCED_LUCK_DURATION_IN_MILLISECONDS,
   ENHANCED_LUCK_PRICE,
-  SNOW_THEME_PRICE,
+  SOUNDTRACK_PRICE,
   SlotMachineStateError,
   calculatePayout,
   createInitialSlotMachineState,
@@ -16,6 +16,7 @@ import {
   evaluateSpin,
   getSlotMachineState,
   purchaseSlotMachinePrize,
+  setSlotMachineSoundtrack,
   setSlotMachineBetAmount,
   spinSlotMachine
 } from '../../backend/services/slot-machine.service.js';
@@ -118,11 +119,11 @@ test('spinSlotMachine rejects a spin when the current bet is higher than the bal
 });
 
 test('purchaseSlotMachinePrize deducts balance and unlocks snow celebration', () => {
-  const purchasedState = purchaseSlotMachinePrize('player-snow-prize', 'snow-theme');
+  const purchasedState = purchaseSlotMachinePrize('player-track-prize', 'black-flag-theme');
 
-  assert.equal(purchasedState.prizes.snowThemeUnlocked, true);
-  assert.equal(purchasedState.stats.totalBalance, DEFAULT_BALANCE - SNOW_THEME_PRICE);
-  assert.equal(purchasedState.winCelebrationTheme, 'snow');
+  assert.deepEqual(purchasedState.prizes.ownedSoundtrackIds, ['black-flag-theme']);
+  assert.equal(purchasedState.prizes.selectedSoundtrackId, 'black-flag-theme');
+  assert.equal(purchasedState.stats.totalBalance, DEFAULT_BALANCE - SOUNDTRACK_PRICE);
 });
 
 test('purchaseSlotMachinePrize activates enhanced luck for one hour', () => {
@@ -136,13 +137,35 @@ test('purchaseSlotMachinePrize activates enhanced luck for one hour', () => {
   );
 });
 
-test('purchaseSlotMachinePrize rejects duplicate snow theme purchases', () => {
-  purchaseSlotMachinePrize('player-duplicate-snow', 'snow-theme');
+test('purchaseSlotMachinePrize rejects duplicate soundtrack purchases', () => {
+  purchaseSlotMachinePrize('player-duplicate-track', 'black-flag-theme');
 
   assert.throws(
-    () => purchaseSlotMachinePrize('player-duplicate-snow', 'snow-theme'),
+    () => purchaseSlotMachinePrize('player-duplicate-track', 'black-flag-theme'),
     (error: unknown) =>
       error instanceof SlotMachineStateError &&
-      error.message === 'Snow celebration is already unlocked.'
+      error.message === 'That soundtrack is already unlocked.'
+  );
+});
+
+test('setSlotMachineSoundtrack allows switching between default and owned tracks', () => {
+  purchaseSlotMachinePrize('player-track-switch', 'black-flag-theme');
+  purchaseSlotMachinePrize('player-track-switch', 'pirate-adventure-theme');
+
+  const switchedState = setSlotMachineSoundtrack('player-track-switch', 'default-theme');
+
+  assert.equal(switchedState.prizes.selectedSoundtrackId, 'default-theme');
+  assert.deepEqual(switchedState.prizes.ownedSoundtrackIds, [
+    'black-flag-theme',
+    'pirate-adventure-theme'
+  ]);
+});
+
+test('setSlotMachineSoundtrack rejects tracks that have not been purchased', () => {
+  assert.throws(
+    () => setSlotMachineSoundtrack('player-track-missing', 'pirate-adventure-theme'),
+    (error: unknown) =>
+      error instanceof SlotMachineStateError &&
+      error.message === 'That soundtrack has not been unlocked yet.'
   );
 });

@@ -1,7 +1,7 @@
 import { fetchSlotMachineState, type SlotPrizeId } from './slot-machine-client.js';
 
 export const ENHANCED_LUCK_PRICE = 500;
-export const SNOW_THEME_PRICE = 250;
+export const SOUNDTRACK_PRICE = 500;
 export const ENHANCED_LUCK_DURATION_IN_MILLISECONDS = 60 * 60 * 1000;
 
 export interface PrizeCatalogEntry {
@@ -15,20 +15,28 @@ export interface PrizeCatalogEntry {
 
 const prizeCatalog: PrizeCatalogEntry[] = [
   {
+    id: 'black-flag-theme',
+    name: 'Black Flag March',
+    price: SOUNDTRACK_PRICE,
+    category: 'Music unlock',
+    icon: '\uD83C\uDFBC',
+    description: 'Unlocks the march-style pirate soundtrack used for a heavier deck atmosphere.'
+  },
+  {
+    id: 'pirate-adventure-theme',
+    name: 'Pirate Adventure',
+    price: SOUNDTRACK_PRICE,
+    category: 'Music unlock',
+    icon: '\uD83C\uDFB6',
+    description: 'Unlocks a brighter high-seas adventure theme you can switch to from the machine.'
+  },
+  {
     id: 'enhanced-luck',
     name: 'Enhanced luck',
     price: ENHANCED_LUCK_PRICE,
     category: 'Timed boost',
     icon: '\u2728',
     description: 'Tilts the reel weights toward premium symbols for the next hour.'
-  },
-  {
-    id: 'snow-theme',
-    name: 'Snow celebration',
-    price: SNOW_THEME_PRICE,
-    category: 'Win animation',
-    icon: '\u2744\uFE0F',
-    description: 'Replaces confetti with a snowfall animation every time you land a win.'
   }
 ];
 

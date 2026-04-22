@@ -1,7 +1,8 @@
-import type { SlotMachineState } from './slot-machine-client.js';
+import type { SlotMachineState, SoundtrackId } from './slot-machine-client.js';
 
 const AUDIO_SETTINGS_STORAGE_KEY = 'pirate-slot-audio-settings';
-const PIRATE_THEME_TRACK_URL = new URL('../../assets/pirate-main-theme.mp3', import.meta.url).href;
+const BLACK_FLAG_THEME_TRACK_URL = new URL('../../assets/pirate-main-theme.mp3', import.meta.url).href;
+const PIRATE_ADVENTURE_TRACK_URL = new URL('../../assets/pirate-adventure-theme.mp3', import.meta.url).href;
 
 export interface AudioSettings {
   musicMuted: boolean;
@@ -12,6 +13,12 @@ export interface AudioSettings {
 
 export type WinSoundTier = 'small' | 'medium' | 'jackpot';
 
+export interface SoundtrackOption {
+  id: SoundtrackId;
+  isUnlockedByDefault: boolean;
+  label: string;
+}
+
 const defaultAudioSettings: AudioSettings = {
   musicVolume: 0.22,
   soundEffectsVolume: 0.7,
@@ -21,6 +28,12 @@ const defaultAudioSettings: AudioSettings = {
 
 let pirateAudioEngine: PirateAudioEngine | null = null;
 
+const soundtrackOptions: SoundtrackOption[] = [
+  { id: 'default-theme', isUnlockedByDefault: true, label: 'Default deck' },
+  { id: 'black-flag-theme', isUnlockedByDefault: false, label: 'Black Flag March' },
+  { id: 'pirate-adventure-theme', isUnlockedByDefault: false, label: 'Pirate Adventure' }
+];
+
 /**
  * Returns the default audio settings for the pirate machine.
  *
@@ -28,6 +41,15 @@ let pirateAudioEngine: PirateAudioEngine | null = null;
  */
 export function createDefaultAudioSettings() {
   return { ...defaultAudioSettings };
+}
+
+/**
+ * Returns the soundtrack choices shown in the UI.
+ *
+ * @returns {SoundtrackOption[]} Available soundtrack options.
+ */
+export function getSoundtrackOptions() {
+  return soundtrackOptions;
 }
 
 /**
@@ -128,14 +150,14 @@ export function resolveWinSoundTier(state: SlotMachineState): WinSoundTier {
  * @param {AudioSettings} settings - Current audio settings.
  * @returns {Promise<void>} Promise resolved after initialization work.
  */
-export async function initializePirateAudio(settings: AudioSettings) {
+export async function initializePirateAudio(settings: AudioSettings, soundtrackId: SoundtrackId) {
   const engine = getPirateAudioEngine();
 
   if (!engine) {
     return;
   }
 
-  await engine.initialize(settings);
+  await engine.initialize(settings, soundtrackId);
 }
 
 /**
@@ -143,14 +165,14 @@ export async function initializePirateAudio(settings: AudioSettings) {
  *
  * @param {AudioSettings} settings - Current audio settings.
  */
-export function syncPirateAudioSettings(settings: AudioSettings) {
+export function syncPirateAudioSettings(settings: AudioSettings, soundtrackId: SoundtrackId) {
   const engine = getPirateAudioEngine();
 
   if (!engine) {
     return;
   }
 
-  engine.applySettings(settings);
+  engine.applySettings(settings, soundtrackId);
 }
 
 /**
@@ -248,24 +270,40 @@ function getPirateAudioEngine() {
 class PirateAudioEngine {
   private audioContext: AudioContext | null = null;
   private musicAudioElement: HTMLAudioElement | null = null;
+  private musicGainNode: GainNode | null = null;
+  private musicStarted = false;
+  private musicSchedulerId: number | null = null;
+  private nextMusicTime = 0;
   private soundEffectsGainNode: GainNode | null = null;
   private spinTimeoutId: number | null = null;
   private spinToken = 0;
+  private activeSoundtrackId: SoundtrackId = 'default-theme';
   private settings = createDefaultAudioSettings();
 
-  async initialize(settings: AudioSettings) {
+  async initialize(settings: AudioSettings, soundtrackId: SoundtrackId) {
     this.settings = sanitizeAudioSettings(settings);
     await this.ensureAudioContext();
-    this.applySettings(this.settings);
+    this.applySettings(this.settings, soundtrackId);
     this.startMusicLoop();
   }
 
-  applySettings(settings: AudioSettings) {
+  applySettings(settings: AudioSettings, soundtrackId: SoundtrackId) {
     this.settings = sanitizeAudioSettings(settings);
+    this.activeSoundtrackId = soundtrackId;
 
     if (this.musicAudioElement) {
       this.musicAudioElement.volume = this.settings.musicMuted ? 0 : this.settings.musicVolume;
       this.musicAudioElement.muted = this.settings.musicMuted;
+    }
+
+    if (this.musicGainNode) {
+      this.musicGainNode.gain.setTargetAtTime(
+        this.settings.musicMuted || soundtrackId !== 'default-theme'
+          ? 0.0001
+          : this.settings.musicVolume,
+        this.audioContext?.currentTime ?? 0,
+        0.08
+      );
     }
 
     if (this.soundEffectsGainNode) {
@@ -437,16 +475,18 @@ class PirateAudioEngine {
       }
 
       this.audioContext = new AudioContextConstructor();
+      this.musicGainNode = this.audioContext.createGain();
       this.soundEffectsGainNode = this.audioContext.createGain();
+      this.musicGainNode.connect(this.audioContext.destination);
       this.soundEffectsGainNode.connect(this.audioContext.destination);
 
       if (!this.musicAudioElement) {
-        this.musicAudioElement = new Audio(PIRATE_THEME_TRACK_URL);
+        this.musicAudioElement = new Audio();
         this.musicAudioElement.loop = true;
         this.musicAudioElement.preload = 'auto';
       }
 
-      this.applySettings(this.settings);
+      this.applySettings(this.settings, this.activeSoundtrackId);
     }
 
     if (this.audioContext.state === 'suspended') {
@@ -455,8 +495,48 @@ class PirateAudioEngine {
   }
 
   private startMusicLoop() {
-    if (!this.musicAudioElement) {
+    if (!this.musicAudioElement || !this.audioContext) {
       return;
+    }
+
+    if (this.activeSoundtrackId === 'default-theme') {
+      if (!this.musicStarted && this.musicGainNode) {
+        this.musicStarted = true;
+        this.nextMusicTime = this.audioContext.currentTime + 0.08;
+
+        const scheduleMusic = () => {
+          if (!this.audioContext || !this.musicGainNode || this.activeSoundtrackId !== 'default-theme') {
+            return;
+          }
+
+          while (this.nextMusicTime < this.audioContext.currentTime + 1.2) {
+            this.schedulePirateBar(this.nextMusicTime);
+            this.nextMusicTime += 2.4;
+          }
+        };
+
+        scheduleMusic();
+        this.musicSchedulerId = window.setInterval(scheduleMusic, 420);
+      }
+
+      if (!this.musicAudioElement.paused) {
+        this.musicAudioElement.pause();
+      }
+
+      return;
+    }
+
+    if (this.musicSchedulerId) {
+      window.clearInterval(this.musicSchedulerId);
+      this.musicSchedulerId = null;
+      this.musicStarted = false;
+    }
+
+    const nextTrackUrl = resolveSoundtrackUrl(this.activeSoundtrackId);
+
+    if (this.musicAudioElement.src !== nextTrackUrl) {
+      this.musicAudioElement.src = nextTrackUrl;
+      this.musicAudioElement.load();
     }
 
     if (this.musicAudioElement.paused) {
@@ -464,6 +544,41 @@ class PirateAudioEngine {
         // Browser autoplay policies can still block playback until a gesture.
       });
     }
+  }
+
+  private schedulePirateBar(barStartTime: number) {
+    const chord = [164.81, 220, 246.94];
+    const melody = [329.63, 392, 440, 392];
+
+    chord.forEach((frequency) => {
+      this.playSustainedNote({
+        durationInSeconds: 2.2,
+        frequency,
+        gainAmount: 0.022,
+        startTime: barStartTime,
+        type: 'triangle'
+      });
+    });
+
+    melody.forEach((frequency, index) => {
+      this.playSustainedNote({
+        durationInSeconds: 0.42,
+        frequency,
+        gainAmount: 0.03,
+        startTime: barStartTime + index * 0.52,
+        type: 'square'
+      });
+    });
+
+    [0, 0.72, 1.44].forEach((offset) => {
+      this.playPercussiveNote({
+        durationInSeconds: 0.08,
+        frequency: 110,
+        gainAmount: 0.035,
+        startTime: barStartTime + offset,
+        type: 'sine'
+      });
+    });
   }
 
   private playCoinRun(startTime: number, frequencies: number[], gainAmount: number) {
@@ -480,6 +595,10 @@ class PirateAudioEngine {
 
   private playPercussiveNote(options: ScheduledNoteOptions) {
     this.playNote(options, this.soundEffectsGainNode);
+  }
+
+  private playSustainedNote(options: ScheduledNoteOptions) {
+    this.playNote(options, this.musicGainNode);
   }
 
   private playNote(
@@ -523,4 +642,12 @@ interface ScheduledNoteOptions {
   gainAmount: number;
   startTime: number;
   type: OscillatorType;
+}
+
+function resolveSoundtrackUrl(soundtrackId: Exclude<SoundtrackId, 'default-theme'>) {
+  if (soundtrackId === 'black-flag-theme') {
+    return BLACK_FLAG_THEME_TRACK_URL;
+  }
+
+  return PIRATE_ADVENTURE_TRACK_URL;
 }

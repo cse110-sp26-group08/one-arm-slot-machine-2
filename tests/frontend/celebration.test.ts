@@ -32,7 +32,8 @@ test('getWinAnnouncement summarizes the payout and winning lines', () => {
     outcome: 'win',
     prizes: {
       enhancedLuckExpiresAt: null,
-      snowThemeUnlocked: false
+      ownedSoundtrackIds: [],
+      selectedSoundtrackId: 'default-theme'
     },
     stats: {
       currentBetAmount: 25,

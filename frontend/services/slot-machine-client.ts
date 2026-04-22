@@ -10,7 +10,8 @@ export type SlotSymbol =
   | 'horseshoe'
   | 'wild';
 export type SlotOutcome = 'loss' | 'near-miss' | 'win';
-export type SlotPrizeId = 'enhanced-luck' | 'snow-theme';
+export type SlotPrizeId = 'enhanced-luck' | 'black-flag-theme' | 'pirate-adventure-theme';
+export type SoundtrackId = 'default-theme' | 'black-flag-theme' | 'pirate-adventure-theme';
 export type WinCelebrationTheme = 'classic' | 'snow';
 
 export interface WinningLine {
@@ -27,7 +28,8 @@ export interface SlotMachineState {
   outcome: SlotOutcome;
   prizes: {
     enhancedLuckExpiresAt: number | null;
-    snowThemeUnlocked: boolean;
+    ownedSoundtrackIds: Array<Exclude<SoundtrackId, 'default-theme'>>;
+    selectedSoundtrackId: SoundtrackId;
   };
   stats: {
     currentBetAmount: number;
@@ -83,6 +85,19 @@ export async function purchaseSlotMachinePrize(prizeId: SlotPrizeId) {
   return sendAuthenticatedSlotMachineRequest<SlotMachineState>('/prize', {
     method: 'POST',
     body: JSON.stringify({ prizeId })
+  });
+}
+
+/**
+ * Updates the active soundtrack for the authenticated user.
+ *
+ * @param {SoundtrackId} soundtrackId - Requested soundtrack identifier.
+ * @returns {Promise<SlotMachineState>} Updated slot-machine state.
+ */
+export async function updateSlotMachineSoundtrack(soundtrackId: SoundtrackId) {
+  return sendAuthenticatedSlotMachineRequest<SlotMachineState>('/soundtrack', {
+    method: 'POST',
+    body: JSON.stringify({ soundtrackId })
   });
 }
 

@@ -5,7 +5,9 @@ import { decodeSessionToken } from '../services/auth-session.service.js';
 import {
   getSlotMachineState,
   purchaseSlotMachinePrize,
+  setSlotMachineSoundtrack,
   setSlotMachineBetAmount,
+  type SoundtrackId,
   type SlotPrizeId,
   SlotMachineStateError,
   spinSlotMachine
@@ -109,7 +111,7 @@ export function purchaseSlotMachinePrizeController(request: Request, response: R
   try {
     void respondWithSyncedState(
       sessionUser,
-      purchaseSlotMachinePrize(sessionUser.id, prizeId ?? 'snow-theme'),
+      purchaseSlotMachinePrize(sessionUser.id, prizeId ?? 'enhanced-luck'),
       response
     );
   } catch (error) {
@@ -119,6 +121,39 @@ export function purchaseSlotMachinePrizeController(request: Request, response: R
     }
 
     response.status(500).json({ error: 'Unable to purchase the selected prize.' });
+  }
+}
+
+/**
+ * Selects the active soundtrack for the authenticated player.
+ *
+ * @param {Request} request - Express request containing the bearer token and soundtrack id.
+ * @param {Response} response - Express response containing the updated state.
+ * @returns {void}
+ */
+export function setSlotMachineSoundtrackController(request: Request, response: Response) {
+  const sessionUser = resolveSessionUser(request);
+
+  if (!sessionUser) {
+    response.status(401).json({ error: 'Authentication is required.' });
+    return;
+  }
+
+  const soundtrackId = request.body?.soundtrackId as SoundtrackId | undefined;
+
+  try {
+    void respondWithSyncedState(
+      sessionUser,
+      setSlotMachineSoundtrack(sessionUser.id, soundtrackId ?? 'default-theme'),
+      response
+    );
+  } catch (error) {
+    if (error instanceof SlotMachineStateError) {
+      response.status(400).json({ error: error.message });
+      return;
+    }
+
+    response.status(500).json({ error: 'Unable to switch the soundtrack.' });
   }
 }
 

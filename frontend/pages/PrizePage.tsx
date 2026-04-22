@@ -6,7 +6,7 @@ import {
   ENHANCED_LUCK_PRICE,
   fetchPrizeCatalog,
   purchaseSlotMachinePrize,
-  SNOW_THEME_PRICE,
+  SOUNDTRACK_PRICE,
   type PrizeCatalogEntry
 } from '../services/prize-client.js';
 import styles from './PrizePage.module.css';
@@ -32,7 +32,7 @@ export function PrizePage({
 }: PrizePageProps) {
   const [catalog, setCatalog] = useState<PrizeCatalogEntry[]>([]);
   const [feedbackMessage, setFeedbackMessage] = useState(
-    'Buy a short luck boost or unlock the snow celebration theme with guest balance.'
+    'Buy a short luck boost or unlock extra pirate soundtracks with guest balance.'
   );
   const [isPurchasingPrize, setIsPurchasingPrize] = useState(false);
 
@@ -54,7 +54,7 @@ export function PrizePage({
       setFeedbackMessage(
         prizeId === 'enhanced-luck'
           ? 'Enhanced luck is active for the next hour.'
-          : 'Snow celebration unlocked. The next win will trigger snowfall.'
+          : 'Soundtrack unlocked. You can switch to it from the machine audio controls.'
       );
     } catch (error) {
       setFeedbackMessage(resolveErrorMessage(error, 'The prize could not be purchased.'));
@@ -71,8 +71,9 @@ export function PrizePage({
           <h1 className={styles.title}>Upgrade your floor perks</h1>
           <p className={styles.supportCopy}>
             Guests can spend their balance here. Enhanced luck costs {ENHANCED_LUCK_PRICE} and
-            lasts {ENHANCED_LUCK_DURATION_IN_MILLISECONDS / (60 * 1000)} minutes. Snow theme costs{' '}
-            {SNOW_THEME_PRICE}.
+            lasts {ENHANCED_LUCK_DURATION_IN_MILLISECONDS / (60 * 1000)} minutes. Each soundtrack
+            costs {SOUNDTRACK_PRICE}, and you can switch between the default deck theme and any
+            unlocked tracks from the machine audio controls.
           </p>
         </div>
         <div className={styles.heroRail}>

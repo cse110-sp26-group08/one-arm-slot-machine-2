@@ -7,6 +7,7 @@ import { WinCelebration } from '../components/home/WinCelebration.js';
 import { pirateTreasureTheme } from '../components/home/slot-theme.js';
 import {
   clampAudioVolume,
+  getSoundtrackOptions,
   initializePirateAudio,
   loadAudioSettings,
   playButtonTapSound,
@@ -21,7 +22,9 @@ import {
 import {
   fetchSlotMachineState,
   spinSlotMachine,
+  updateSlotMachineSoundtrack,
   updateSlotMachineBetAmount,
+  type SoundtrackId,
   type SlotMachineState,
   type SlotSymbol
 } from '../services/slot-machine-client.js';
@@ -66,6 +69,12 @@ export function HomePage({
   const celebrationTimeoutRef = useRef<number | null>(null);
   const celebrationTheme = slotMachineState?.winCelebrationTheme ?? 'classic';
   const celebrationParticles = createCelebrationParticles(celebrationTheme);
+  const ownedSoundtrackIds = slotMachineState?.prizes.ownedSoundtrackIds ?? [];
+  const unlockedSoundtrackOptions = getSoundtrackOptions().filter(
+    (soundtrackOption) =>
+      soundtrackOption.isUnlockedByDefault ||
+      ownedSoundtrackIds.includes(soundtrackOption.id as Exclude<SoundtrackId, 'default-theme'>)
+  );
 
   useEffect(() => {
     void hydrateSlotMachineState();
@@ -73,12 +82,18 @@ export function HomePage({
 
   useEffect(() => {
     saveAudioSettings(audioSettings);
-    syncPirateAudioSettings(audioSettings);
-  }, [audioSettings]);
+    syncPirateAudioSettings(
+      audioSettings,
+      slotMachineState?.prizes.selectedSoundtrackId ?? 'default-theme'
+    );
+  }, [audioSettings, slotMachineState?.prizes.selectedSoundtrackId]);
 
   useEffect(() => {
     const activateAudio = () => {
-      void initializePirateAudio(audioSettings);
+      void initializePirateAudio(
+        audioSettings,
+        slotMachineState?.prizes.selectedSoundtrackId ?? 'default-theme'
+      );
       window.removeEventListener('pointerdown', activateAudio);
       window.removeEventListener('keydown', activateAudio);
     };
@@ -90,7 +105,7 @@ export function HomePage({
       window.removeEventListener('pointerdown', activateAudio);
       window.removeEventListener('keydown', activateAudio);
     };
-  }, [audioSettings]);
+  }, [audioSettings, slotMachineState?.prizes.selectedSoundtrackId]);
 
   function dismissCelebration() {
     clearCelebration(celebrationTimeoutRef, setIsCelebratingWin);
@@ -117,7 +132,7 @@ export function HomePage({
     }
 
     dismissCelebration();
-    await initializePirateAudio(audioSettings);
+    await initializePirateAudio(audioSettings, slotMachineState.prizes.selectedSoundtrackId);
     setIsSpinning(true);
     setStatusMessage('The reels are rolling through the tide and will settle from port to starboard.');
     const previewInterval = window.setInterval(() => {
@@ -193,8 +208,20 @@ export function HomePage({
   }
 
   async function handleButtonTap() {
-    await initializePirateAudio(audioSettings);
+    await initializePirateAudio(audioSettings, slotMachineState?.prizes.selectedSoundtrackId ?? 'default-theme');
     await playButtonTapSound();
+  }
+
+  async function handleSoundtrackChange(soundtrackId: SoundtrackId) {
+    if (!slotMachineState) {
+      return;
+    }
+
+    const nextState = await updateSlotMachineSoundtrack(soundtrackId);
+    setSlotMachineState(nextState);
+    await initializePirateAudio(audioSettings, nextState.prizes.selectedSoundtrackId);
+    syncPirateAudioSettings(audioSettings, nextState.prizes.selectedSoundtrackId);
+    setStatusMessage(`Soundtrack set to ${resolveSoundtrackLabel(soundtrackId)}.`);
   }
 
   if (!slotMachineState || !displayedGrid) {
@@ -258,7 +285,9 @@ export function HomePage({
             soundEffectsMuted: false
           }));
         }}
+        onSoundtrackChange={handleSoundtrackChange}
         onSpin={handleSpin}
+        soundtrackOptions={unlockedSoundtrackOptions}
         slotMachineState={slotMachineState}
         statusMessage={statusMessage}
         userDisplayName={user.displayName}
@@ -343,6 +372,18 @@ function nextRevealDurationInMilliseconds(
   revealDelayPerColumnInMilliseconds: number
 ) {
   return columnCount * revealDelayPerColumnInMilliseconds;
+}
+
+function resolveSoundtrackLabel(soundtrackId: SoundtrackId) {
+  if (soundtrackId === 'default-theme') {
+    return 'Default deck';
+  }
+
+  if (soundtrackId === 'black-flag-theme') {
+    return 'Black Flag March';
+  }
+
+  return 'Pirate Adventure';
 }
 
 /**

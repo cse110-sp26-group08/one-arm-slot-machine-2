@@ -3,11 +3,12 @@ export const SLOT_MACHINE_COLUMNS = 3;
 export const DEFAULT_BET_AMOUNT = 25;
 export const DEFAULT_BALANCE = 1000;
 export const ENHANCED_LUCK_PRICE = 500;
-export const SNOW_THEME_PRICE = 250;
+export const SOUNDTRACK_PRICE = 500;
 export const ENHANCED_LUCK_DURATION_IN_MILLISECONDS = 60 * 60 * 1000;
 
 const _slotSymbols = ['seven', 'diamond', 'bar', 'cherry', 'bell', 'horseshoe', 'wild'] as const;
-const _slotPrizeIds = ['enhanced-luck', 'snow-theme'] as const;
+const _slotPrizeIds = ['enhanced-luck', 'black-flag-theme', 'pirate-adventure-theme'] as const;
+const _ownedSoundtrackIds = ['black-flag-theme', 'pirate-adventure-theme'] as const;
 const paylineRows = [
   [0, 0, 0],
   [1, 1, 1],
@@ -46,11 +47,14 @@ const symbolPayoutMultipliers: Record<SlotSymbol, Record<number, number>> = {
 export type SlotSymbol = (typeof _slotSymbols)[number];
 export type SlotOutcome = 'loss' | 'near-miss' | 'win';
 export type SlotPrizeId = (typeof _slotPrizeIds)[number];
+export type OwnedSoundtrackId = (typeof _ownedSoundtrackIds)[number];
+export type SoundtrackId = 'default-theme' | OwnedSoundtrackId;
 export type WinCelebrationTheme = 'classic' | 'snow';
 
 export interface SlotPrizeInventory {
   enhancedLuckExpiresAt: number | null;
-  snowThemeUnlocked: boolean;
+  ownedSoundtrackIds: OwnedSoundtrackId[];
+  selectedSoundtrackId: SoundtrackId;
 }
 
 export interface WinningLine {
@@ -128,7 +132,7 @@ export function spinSlotMachine(playerId: string) {
         currentState.stats.currentBetAmount +
         evaluatedSpin.payout
     },
-    winCelebrationTheme: currentState.prizes.snowThemeUnlocked ? 'snow' : 'classic',
+    winCelebrationTheme: 'classic',
     winningLines: evaluatedSpin.winningLines
   };
 
@@ -156,8 +160,8 @@ export function purchaseSlotMachinePrize(playerId: string, prizeId: SlotPrizeId)
     throw new SlotMachineStateError('Not enough balance to purchase that prize.');
   }
 
-  if (prizeId === 'snow-theme' && resolvedPrizes.snowThemeUnlocked) {
-    throw new SlotMachineStateError('Snow celebration is already unlocked.');
+  if (isOwnedSoundtrackId(prizeId) && resolvedPrizes.ownedSoundtrackIds.includes(prizeId)) {
+    throw new SlotMachineStateError('That soundtrack is already unlocked.');
   }
 
   const nextPrizes: SlotPrizeInventory =
@@ -168,7 +172,8 @@ export function purchaseSlotMachinePrize(playerId: string, prizeId: SlotPrizeId)
         }
       : {
           ...resolvedPrizes,
-          snowThemeUnlocked: true
+          ownedSoundtrackIds: [...resolvedPrizes.ownedSoundtrackIds, prizeId],
+          selectedSoundtrackId: prizeId
         };
   const updatedState: SlotMachineState = {
     ...currentState,
@@ -176,8 +181,37 @@ export function purchaseSlotMachinePrize(playerId: string, prizeId: SlotPrizeId)
     stats: {
       ...currentState.stats,
       totalBalance: currentState.stats.totalBalance - prizePrice
-    },
-    winCelebrationTheme: nextPrizes.snowThemeUnlocked ? 'snow' : 'classic'
+    }
+  };
+
+  slotMachineStateByPlayer.set(playerId, updatedState);
+  return updatedState;
+}
+
+/**
+ * Selects one of the available soundtracks for the player.
+ *
+ * @param {string} playerId - Unique session or user identifier.
+ * @param {SoundtrackId} soundtrackId - Soundtrack identifier to activate.
+ * @returns {SlotMachineState} Updated slot-machine state with the selected soundtrack.
+ */
+export function setSlotMachineSoundtrack(playerId: string, soundtrackId: SoundtrackId) {
+  const currentState = getSlotMachineState(playerId);
+  const resolvedPrizes = resolvePrizeInventory(currentState.prizes);
+
+  if (
+    soundtrackId !== 'default-theme' &&
+    !resolvedPrizes.ownedSoundtrackIds.includes(soundtrackId)
+  ) {
+    throw new SlotMachineStateError('That soundtrack has not been unlocked yet.');
+  }
+
+  const updatedState: SlotMachineState = {
+    ...currentState,
+    prizes: {
+      ...resolvedPrizes,
+      selectedSoundtrackId: soundtrackId
+    }
   };
 
   slotMachineStateByPlayer.set(playerId, updatedState);
@@ -226,7 +260,8 @@ export function createInitialSlotMachineState(): SlotMachineState {
     outcome: 'loss',
     prizes: {
       enhancedLuckExpiresAt: null,
-      snowThemeUnlocked: false
+      ownedSoundtrackIds: [],
+      selectedSoundtrackId: 'default-theme'
     },
     stats: {
       totalBalance: DEFAULT_BALANCE,
@@ -391,5 +426,9 @@ function resolvePrizePrice(prizeId: SlotPrizeId) {
     return ENHANCED_LUCK_PRICE;
   }
 
-  return SNOW_THEME_PRICE;
+  return SOUNDTRACK_PRICE;
+}
+
+function isOwnedSoundtrackId(prizeId: SlotPrizeId): prizeId is OwnedSoundtrackId {
+  return prizeId !== 'enhanced-luck';
 }

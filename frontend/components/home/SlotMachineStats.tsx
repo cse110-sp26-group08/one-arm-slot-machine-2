@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 
 import styles from '../../pages/HomePage.module.css';
-import type { AudioSettings } from '../../services/celebration-audio.js';
-import type { SlotMachineState } from '../../services/slot-machine-client.js';
+import type { AudioSettings, SoundtrackOption } from '../../services/celebration-audio.js';
+import type { SlotMachineState, SoundtrackId } from '../../services/slot-machine-client.js';
 
 interface SlotMachineStatsProps {
   audioSettings: AudioSettings;
@@ -17,8 +17,10 @@ interface SlotMachineStatsProps {
   onPlayButtonSound: () => void | Promise<void>;
   onSoundEffectsMuteToggle: () => void | Promise<void>;
   onSoundEffectsVolumeChange: (nextVolume: number) => void | Promise<void>;
+  onSoundtrackChange: (soundtrackId: SoundtrackId) => void | Promise<void>;
   onSpin: () => void | Promise<void>;
   statusMessage: string;
+  soundtrackOptions: SoundtrackOption[];
   slotMachineState: SlotMachineState;
   userDisplayName: string;
 }
@@ -42,8 +44,10 @@ export function SlotMachineStats({
   onPlayButtonSound,
   onSoundEffectsMuteToggle,
   onSoundEffectsVolumeChange,
+  onSoundtrackChange,
   onSpin,
   statusMessage,
+  soundtrackOptions,
   slotMachineState,
   userDisplayName
 }: SlotMachineStatsProps) {
@@ -202,6 +206,22 @@ export function SlotMachineStats({
               value={Math.round(audioSettings.musicVolume * 100)}
             />
           </div>
+        </div>
+        <div className={styles.audioControl}>
+          <span className={styles.statsLabel}>Soundtrack</span>
+          <select
+            className={styles.soundtrackSelect}
+            onChange={(event) => {
+              void onSoundtrackChange(event.target.value as SoundtrackId);
+            }}
+            value={slotMachineState.prizes.selectedSoundtrackId}
+          >
+            {soundtrackOptions.map((soundtrackOption) => (
+              <option key={soundtrackOption.id} value={soundtrackOption.id}>
+                {soundtrackOption.label}
+              </option>
+            ))}
+          </select>
         </div>
         <div className={styles.audioControl}>
           <span className={styles.statsLabel}>Sound effects</span>

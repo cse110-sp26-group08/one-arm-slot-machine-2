@@ -4,6 +4,7 @@ import test from 'node:test';
 import {
   clampAudioVolume,
   createDefaultAudioSettings,
+  getSoundtrackOptions,
   resolveWinSoundTier,
   sanitizeAudioSettings
 } from '../../frontend/services/celebration-audio.js';
@@ -40,7 +41,8 @@ test('resolveWinSoundTier scales pirate win sounds by payout size', () => {
     outcome: 'win',
     prizes: {
       enhancedLuckExpiresAt: null,
-      snowThemeUnlocked: false
+      ownedSoundtrackIds: [],
+      selectedSoundtrackId: 'default-theme'
     },
     stats: {
       currentBetAmount: 25,
@@ -54,4 +56,13 @@ test('resolveWinSoundTier scales pirate win sounds by payout size', () => {
   assert.equal(resolveWinSoundTier({ ...baseState, lastPayout: 75 }), 'small');
   assert.equal(resolveWinSoundTier({ ...baseState, lastPayout: 200 }), 'medium');
   assert.equal(resolveWinSoundTier({ ...baseState, lastPayout: 600 }), 'jackpot');
+});
+
+test('getSoundtrackOptions exposes the default track and both purchasable tracks', () => {
+  const soundtrackOptions = getSoundtrackOptions();
+
+  assert.equal(soundtrackOptions.length, 3);
+  assert.equal(soundtrackOptions[0].id, 'default-theme');
+  assert.equal(soundtrackOptions[1].id, 'black-flag-theme');
+  assert.equal(soundtrackOptions[2].id, 'pirate-adventure-theme');
 });
