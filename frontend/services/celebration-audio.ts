@@ -1,6 +1,7 @@
 import type { SlotMachineState } from './slot-machine-client.js';
 
 const AUDIO_SETTINGS_STORAGE_KEY = 'pirate-slot-audio-settings';
+const PIRATE_THEME_TRACK_URL = new URL('../../assets/pirate-main-theme.mp3', import.meta.url).href;
 
 export interface AudioSettings {
   musicMuted: boolean;
@@ -246,11 +247,8 @@ function getPirateAudioEngine() {
 
 class PirateAudioEngine {
   private audioContext: AudioContext | null = null;
-  private musicGainNode: GainNode | null = null;
+  private musicAudioElement: HTMLAudioElement | null = null;
   private soundEffectsGainNode: GainNode | null = null;
-  private musicStarted = false;
-  private musicSchedulerId: number | null = null;
-  private nextMusicTime = 0;
   private spinTimeoutId: number | null = null;
   private spinToken = 0;
   private settings = createDefaultAudioSettings();
@@ -265,12 +263,9 @@ class PirateAudioEngine {
   applySettings(settings: AudioSettings) {
     this.settings = sanitizeAudioSettings(settings);
 
-    if (this.musicGainNode) {
-      this.musicGainNode.gain.setTargetAtTime(
-        this.settings.musicMuted ? 0.0001 : this.settings.musicVolume,
-        this.audioContext?.currentTime ?? 0,
-        0.08
-      );
+    if (this.musicAudioElement) {
+      this.musicAudioElement.volume = this.settings.musicMuted ? 0 : this.settings.musicVolume;
+      this.musicAudioElement.muted = this.settings.musicMuted;
     }
 
     if (this.soundEffectsGainNode) {
@@ -442,10 +437,15 @@ class PirateAudioEngine {
       }
 
       this.audioContext = new AudioContextConstructor();
-      this.musicGainNode = this.audioContext.createGain();
       this.soundEffectsGainNode = this.audioContext.createGain();
-      this.musicGainNode.connect(this.audioContext.destination);
       this.soundEffectsGainNode.connect(this.audioContext.destination);
+
+      if (!this.musicAudioElement) {
+        this.musicAudioElement = new Audio(PIRATE_THEME_TRACK_URL);
+        this.musicAudioElement.loop = true;
+        this.musicAudioElement.preload = 'auto';
+      }
+
       this.applySettings(this.settings);
     }
 
@@ -455,61 +455,15 @@ class PirateAudioEngine {
   }
 
   private startMusicLoop() {
-    if (!this.audioContext || !this.musicGainNode || this.musicStarted) {
+    if (!this.musicAudioElement) {
       return;
     }
 
-    this.musicStarted = true;
-    this.nextMusicTime = this.audioContext.currentTime + 0.08;
-
-    const scheduleMusic = () => {
-      if (!this.audioContext || !this.musicGainNode) {
-        return;
-      }
-
-      while (this.nextMusicTime < this.audioContext.currentTime + 1.2) {
-        this.schedulePirateBar(this.nextMusicTime);
-        this.nextMusicTime += 2.4;
-      }
-    };
-
-    scheduleMusic();
-    this.musicSchedulerId = window.setInterval(scheduleMusic, 420);
-  }
-
-  private schedulePirateBar(barStartTime: number) {
-    const chord = [164.81, 220, 246.94];
-    const melody = [329.63, 392, 440, 392];
-
-    chord.forEach((frequency) => {
-      this.playSustainedNote({
-        durationInSeconds: 2.2,
-        frequency,
-        gainAmount: 0.022,
-        startTime: barStartTime,
-        type: 'triangle'
+    if (this.musicAudioElement.paused) {
+      void this.musicAudioElement.play().catch(() => {
+        // Browser autoplay policies can still block playback until a gesture.
       });
-    });
-
-    melody.forEach((frequency, index) => {
-      this.playSustainedNote({
-        durationInSeconds: 0.42,
-        frequency,
-        gainAmount: 0.03,
-        startTime: barStartTime + index * 0.52,
-        type: 'square'
-      });
-    });
-
-    [0, 0.72, 1.44].forEach((offset) => {
-      this.playPercussiveNote({
-        durationInSeconds: 0.08,
-        frequency: 110,
-        gainAmount: 0.035,
-        startTime: barStartTime + offset,
-        type: 'sine'
-      });
-    });
+    }
   }
 
   private playCoinRun(startTime: number, frequencies: number[], gainAmount: number) {
@@ -526,10 +480,6 @@ class PirateAudioEngine {
 
   private playPercussiveNote(options: ScheduledNoteOptions) {
     this.playNote(options, this.soundEffectsGainNode);
-  }
-
-  private playSustainedNote(options: ScheduledNoteOptions) {
-    this.playNote(options, this.musicGainNode);
   }
 
   private playNote(
