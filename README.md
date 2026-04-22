@@ -1,5 +1,7 @@
 # One-Arm Slot Machine II
 
+## GitHub Pages Site: [click](https://cse110-sp26-group08.github.io/one-arm-slot-machine-2/)
+
 A fully-featured pirate-themed slot machine website built with the MERN stack. Features multiple themed machines, leaderboards, social competition, and engaging gameplay mechanics informed by user research and psychology.
 
 ---
