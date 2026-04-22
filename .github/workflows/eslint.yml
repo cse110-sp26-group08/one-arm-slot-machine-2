@@ -20,7 +20,7 @@ on:
 
 jobs:
   eslint:
-    name: Lint and typecheck TypeScript
+    name: Run eslint scanning
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
