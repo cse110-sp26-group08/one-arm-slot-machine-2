@@ -7,20 +7,20 @@
 # More details at https://github.com/eslint/eslint
 # and https://eslint.org
 
-name: ESLint
+name: Run eslint scanning
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
     # The branches below must be a subset of the branches above
-    branches: [ "main" ]
+    branches: ["main"]
   schedule:
-    - cron: '28 14 * * 0'
+    - cron: "28 14 * * 0"
 
 jobs:
   eslint:
-    name: Lint and typecheck TypeScript
+    name: Run eslint scanning
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
