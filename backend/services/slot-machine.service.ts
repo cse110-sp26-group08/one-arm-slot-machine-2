@@ -95,6 +95,7 @@ export function getSlotMachineState(playerId: string) {
   const existingState = slotMachineStateByPlayer.get(playerId);
 
   if (existingState) {
+    existingState.prizes = resolvePrizeInventory(existingState.prizes);
     return existingState;
   }
 
@@ -404,15 +405,41 @@ function chooseWeightedSymbol(weightTable: Record<SlotSymbol, number>) {
   return weightedPool[randomIndex];
 }
 
-function resolvePrizeInventory(prizes: SlotPrizeInventory) {
-  if (prizes.enhancedLuckExpiresAt && prizes.enhancedLuckExpiresAt <= Date.now()) {
+function resolvePrizeInventory(prizes: SlotPrizeInventory | Record<string, unknown>) {
+  const normalizedPrizes: SlotPrizeInventory = {
+    enhancedLuckExpiresAt:
+      typeof prizes.enhancedLuckExpiresAt === 'number' ? prizes.enhancedLuckExpiresAt : null,
+    ownedSoundtrackIds: Array.isArray(prizes.ownedSoundtrackIds)
+      ? prizes.ownedSoundtrackIds.filter((soundtrackId): soundtrackId is OwnedSoundtrackId =>
+          _ownedSoundtrackIds.includes(soundtrackId as OwnedSoundtrackId)
+        )
+      : [],
+    selectedSoundtrackId:
+      typeof prizes.selectedSoundtrackId === 'string' &&
+      (prizes.selectedSoundtrackId === 'default-theme' ||
+        _ownedSoundtrackIds.includes(prizes.selectedSoundtrackId as OwnedSoundtrackId))
+        ? (prizes.selectedSoundtrackId as SoundtrackId)
+        : 'default-theme'
+  };
+
+  if (
+    normalizedPrizes.selectedSoundtrackId !== 'default-theme' &&
+    !normalizedPrizes.ownedSoundtrackIds.includes(normalizedPrizes.selectedSoundtrackId)
+  ) {
+    normalizedPrizes.selectedSoundtrackId = 'default-theme';
+  }
+
+  if (
+    normalizedPrizes.enhancedLuckExpiresAt &&
+    normalizedPrizes.enhancedLuckExpiresAt <= Date.now()
+  ) {
     return {
-      ...prizes,
+      ...normalizedPrizes,
       enhancedLuckExpiresAt: null
     };
   }
 
-  return prizes;
+  return normalizedPrizes;
 }
 
 function resolveSymbolWeights(state: SlotMachineState) {

@@ -169,3 +169,15 @@ test('setSlotMachineSoundtrack rejects tracks that have not been purchased', () 
       error.message === 'That soundtrack has not been unlocked yet.'
   );
 });
+
+test('purchaseSlotMachinePrize migrates legacy prize inventory before unlocking soundtracks', () => {
+  const legacyState = getSlotMachineState('player-legacy-prizes');
+  (legacyState.prizes as unknown as { snowThemeUnlocked?: boolean }).snowThemeUnlocked = true;
+  delete (legacyState.prizes as { ownedSoundtrackIds?: string[] }).ownedSoundtrackIds;
+  delete (legacyState.prizes as { selectedSoundtrackId?: string }).selectedSoundtrackId;
+
+  const purchasedState = purchaseSlotMachinePrize('player-legacy-prizes', 'black-flag-theme');
+
+  assert.deepEqual(purchasedState.prizes.ownedSoundtrackIds, ['black-flag-theme']);
+  assert.equal(purchasedState.prizes.selectedSoundtrackId, 'black-flag-theme');
+});
