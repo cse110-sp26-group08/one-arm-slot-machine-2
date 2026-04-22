@@ -14,6 +14,42 @@ const confettiPalette = ['#f9c968', '#ff7f51', '#ff4d6d', '#5eead4', '#7dd3fc', 
 const snowPalette = ['#f8fdff', '#d8f4ff', '#e8fbff'];
 
 /**
+ * Resolves the main title shown in the celebration overlay for the current win tier.
+ *
+ * @param {'win' | 'big-win' | 'jackpot'} animationTier - Animation intensity for the finished spin.
+ * @returns {string} Celebration title copy.
+ */
+export function getCelebrationHeadline(animationTier: 'win' | 'big-win' | 'jackpot') {
+  if (animationTier === 'jackpot') {
+    return 'Jackpot!';
+  }
+
+  if (animationTier === 'big-win') {
+    return 'Big win!';
+  }
+
+  return 'You win!';
+}
+
+/**
+ * Resolves the smaller accent label shown above the celebration title.
+ *
+ * @param {'win' | 'big-win' | 'jackpot'} animationTier - Animation intensity for the finished spin.
+ * @returns {string} Accent label copy.
+ */
+export function getCelebrationEyebrow(animationTier: 'win' | 'big-win' | 'jackpot') {
+  if (animationTier === 'jackpot') {
+    return 'Treasure vault open';
+  }
+
+  if (animationTier === 'big-win') {
+    return 'High tide payout';
+  }
+
+  return 'Jackpot lights';
+}
+
+/**
  * Builds deterministic confetti particle values for the win overlay.
  *
  * @param {number} particleCount - Number of particles to generate.

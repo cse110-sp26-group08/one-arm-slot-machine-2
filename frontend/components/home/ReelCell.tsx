@@ -3,6 +3,7 @@ import type { SlotSymbol } from '../../services/slot-machine-client.js';
 import type { SlotMachineTheme } from './slot-theme.js';
 
 interface ReelCellProps {
+  className?: string;
   isNearMiss: boolean;
   isSettling: boolean;
   isSpinning: boolean;
@@ -19,6 +20,7 @@ interface ReelCellProps {
  * @returns {JSX.Element} Reel cell UI.
  */
 export function ReelCell({
+  className = '',
   isNearMiss,
   isSettling,
   isSpinning,
@@ -33,6 +35,7 @@ export function ReelCell({
     <div
       className={[
         styles.reelCell,
+        className,
         isSpinning ? styles.reelCellSpinning : '',
         isSettling ? styles.reelCellSettling : '',
         isNearMiss ? styles.reelCellNearMiss : '',

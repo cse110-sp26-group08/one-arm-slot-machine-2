@@ -2,7 +2,11 @@ import type { CSSProperties } from 'react';
 
 import styles from '../../pages/HomePage.module.css';
 import type { SlotMachineAnimationState } from './animation-state.js';
-import type { ConfettiParticle } from './celebration.js';
+import {
+  getCelebrationEyebrow,
+  getCelebrationHeadline,
+  type ConfettiParticle
+} from './celebration.js';
 import type { WinCelebrationTheme } from '../../services/slot-machine-client.js';
 
 interface WinCelebrationProps {
@@ -32,6 +36,9 @@ export function WinCelebration({
     return null;
   }
 
+  const celebrationHeadline = getCelebrationHeadline(animationTier);
+  const celebrationEyebrow = getCelebrationEyebrow(animationTier);
+
   return (
     <div
       className={[
@@ -43,6 +50,11 @@ export function WinCelebration({
       aria-live="polite"
       aria-modal="true"
     >
+      <div className={styles.celebrationAura} aria-hidden="true">
+        <span className={styles.celebrationAuraRing} />
+        <span className={styles.celebrationAuraRing} />
+        <span className={styles.celebrationAuraGlow} />
+      </div>
       <div className={styles.celebrationConfetti} aria-hidden="true">
         {confettiParticles.map((particle, index) => {
           const particleStyle: CSSProperties & Record<'--confetti-drift', string> = {
@@ -93,9 +105,25 @@ export function WinCelebration({
         </div>
       ) : null}
       <div className={styles.celebrationCard}>
-        <p className={styles.celebrationEyebrow}>Jackpot lights</p>
-        <h2 className={styles.celebrationTitle}>You win!</h2>
+        <div className={styles.celebrationSparkBand} aria-hidden="true">
+          {Array.from({ length: animationTier === 'jackpot' ? 9 : 6 }, (_, index) => (
+            <span
+              className={styles.celebrationSpark}
+              key={`celebration-spark-${index}`}
+              style={{ animationDelay: `${index * 120}ms` } as CSSProperties}
+            />
+          ))}
+        </div>
+        <p className={styles.celebrationEyebrow}>{celebrationEyebrow}</p>
+        <h2 className={styles.celebrationTitle}>{celebrationHeadline}</h2>
         <p className={styles.celebrationBody}>{announcement}</p>
+        <p className={styles.celebrationSubcopy}>
+          {animationTier === 'jackpot'
+            ? 'The whole deck is lit up. Ride the streak and press again when you are ready.'
+            : animationTier === 'big-win'
+              ? 'The reels are still glowing. Let the payout breathe for a second.'
+              : 'The lights stay warm while the reels drift back to idle.'}
+        </p>
         <button className={styles.celebrationButton} onClick={onDismiss} type="button">
           Keep playing
         </button>

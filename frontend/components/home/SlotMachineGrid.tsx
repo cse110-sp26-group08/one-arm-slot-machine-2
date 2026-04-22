@@ -11,6 +11,7 @@ interface SlotMachineGridProps {
   displayedGrid: SlotMachineState['grid'];
   isSpinning: boolean;
   settlingColumnIndexes: number[];
+  spinningColumnStrips: SlotMachineState['grid'][number][];
   slotMachineState: SlotMachineState;
   theme: SlotMachineTheme;
 }
@@ -26,6 +27,7 @@ export function SlotMachineGrid({
   displayedGrid,
   isSpinning,
   settlingColumnIndexes,
+  spinningColumnStrips,
   slotMachineState,
   theme
 }: SlotMachineGridProps) {
@@ -46,6 +48,7 @@ export function SlotMachineGrid({
     <section
       className={[
         styles.machineFrame,
+        animationState === 'idle' ? styles.machineFrameIdle : '',
         animationState === 'big-win' ? styles.machineFrameBigWin : '',
         animationState === 'jackpot' ? styles.machineFrameJackpot : ''
       ].join(' ')}
@@ -63,7 +66,13 @@ export function SlotMachineGrid({
           <p className={styles.eyebrow}>{theme.accentLabel}</p>
           <h1 className={styles.machineTitle}>{theme.machineName}</h1>
         </div>
-        <div className={styles.payoutBadge}>
+        <div
+          className={[
+            styles.payoutBadge,
+            animationState === 'idle' ? styles.payoutBadgeIdle : '',
+            slotMachineState.outcome === 'win' ? styles.payoutBadgeWin : ''
+          ].join(' ')}
+        >
           {slotMachineState.outcome === 'win'
             ? `Win ${slotMachineState.lastPayout}`
             : slotMachineState.outcome === 'near-miss'
@@ -71,7 +80,16 @@ export function SlotMachineGrid({
               : `Last payout: ${slotMachineState.lastPayout}`}
         </div>
       </div>
-      <div className={styles.reelCabinet}>
+      <div className={[styles.reelCabinet, animationState === 'idle' ? styles.reelCabinetIdle : ''].join(' ')}>
+        <div className={styles.reelCabinetLights} aria-hidden="true">
+          {Array.from({ length: 10 }, (_, index) => (
+            <span
+              className={styles.reelCabinetLight}
+              key={`cabinet-light-${index}`}
+              style={{ animationDelay: `${index * 180}ms` } satisfies CSSProperties}
+            />
+          ))}
+        </div>
         {isBigWinAnimation ? (
           <div className={styles.coinBurst} aria-hidden="true">
             {Array.from({ length: animationState === 'jackpot' ? 18 : 10 }, (_, index) => (
@@ -95,20 +113,51 @@ export function SlotMachineGrid({
           </div>
         ) : null}
         <div className={styles.reelMatrix}>
-          {displayedGrid.flatMap((row, rowIndex) =>
-            row.map((symbol, columnIndex) => (
-              <ReelCell
-                isNearMiss={!isSpinning && nearMissPositions.has(`${rowIndex}-${columnIndex}`)}
-                isSettling={settlingColumnIndexes.includes(columnIndex)}
-                isSpinning={isSpinning}
-                isWinning={!isSpinning && winningPositions.has(`${rowIndex}-${columnIndex}`)}
-                key={`${rowIndex}-${columnIndex}-${symbol}`}
-                spinDelayMilliseconds={columnIndex * 160}
-                symbol={symbol}
-                theme={theme}
-              />
-            ))
-          )}
+          {Array.from({ length: displayedGrid[0]?.length ?? 0 }, (_, columnIndex) => {
+            const isColumnSettling = settlingColumnIndexes.includes(columnIndex);
+            const shouldScrollColumn = isSpinning && !isColumnSettling;
+            const visibleColumn = displayedGrid.map((row) => row[columnIndex]);
+            const stripSymbols = spinningColumnStrips[columnIndex] ?? visibleColumn;
+
+            return (
+              <div className={styles.reelColumn} key={`column-${columnIndex}`}>
+                {shouldScrollColumn ? (
+                  <div
+                    className={styles.reelStrip}
+                    style={{ animationDelay: `${columnIndex * 120}ms` } satisfies CSSProperties}
+                  >
+                    {[...stripSymbols, ...stripSymbols].map((symbol, symbolIndex) => (
+                      <ReelCell
+                        className={styles.reelStripCell}
+                        isNearMiss={false}
+                        isSettling={false}
+                        isSpinning={false}
+                        isWinning={false}
+                        key={`strip-${columnIndex}-${symbol}-${symbolIndex}`}
+                        spinDelayMilliseconds={0}
+                        symbol={symbol}
+                        theme={theme}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  visibleColumn.map((symbol, rowIndex) => (
+                    <ReelCell
+                      className={styles.reelStaticCell}
+                      isNearMiss={!isSpinning && nearMissPositions.has(`${rowIndex}-${columnIndex}`)}
+                      isSettling={isColumnSettling}
+                      isSpinning={false}
+                      isWinning={!isSpinning && winningPositions.has(`${rowIndex}-${columnIndex}`)}
+                      key={`${rowIndex}-${columnIndex}-${symbol}`}
+                      spinDelayMilliseconds={columnIndex * 160}
+                      symbol={symbol}
+                      theme={theme}
+                    />
+                  ))
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
       <div className={styles.machineMeta}>
