@@ -2,7 +2,7 @@ name: Deploy README to Pages
 
 on:
   push:
-    branches: ["main"] # Change this if your default branch is different
+    branches: ["main"]
   workflow_dispatch:
 
 permissions:
@@ -23,15 +23,20 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
-      - name: Swap index files
+      - name: Convert README to index.html
         run: |
-          # Remove the existing index.html so it doesn't take priority
-          rm index.html
+          # 1. Remove the original index.html so it doesn't take priority
+          rm -f index.html 
+          
+          # 2. Use Pandoc (built-in on GitHub Runners) to convert README to index.html
+          # This ensures there is a real .html file for the server to find.
+          pandoc README.md -s -o index.html --metadata title="Project README"
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: "."
+          # This uploads the current directory containing our new index.html
+          path: '.'
 
       - name: Deploy to GitHub Pages
         id: deployment
