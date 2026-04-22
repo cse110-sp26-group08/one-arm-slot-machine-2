@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { login, loginAsGuest, restoreSession, signup } from '../../backend/controllers/auth.controller.js';
+import { AccountDataModel } from '../../backend/models/account-data.model.js';
 import { UserModel } from '../../backend/models/user.model.js';
 import { createSessionToken, decodeSessionToken } from '../../backend/services/auth-session.service.js';
 import { validateLoginRequest, validateSignupRequest } from '../../backend/validators/auth.validator.js';
@@ -66,10 +67,14 @@ test('createSessionToken can be decoded into the original public user payload', 
 
 test('signup creates a user and returns a signed session payload', async () => {
   const originalSave = UserModel.prototype.save;
+  const originalCreate = AccountDataModel.create;
 
   UserModel.prototype.save = async function saveStub() {
     return this;
   };
+  AccountDataModel.create = (async () => ({
+    id: 'account-data-1'
+  })) as unknown as typeof AccountDataModel.create;
 
   const response = createResponse();
 
@@ -89,6 +94,7 @@ test('signup creates a user and returns a signed session payload', async () => {
   );
 
   UserModel.prototype.save = originalSave;
+  AccountDataModel.create = originalCreate;
 
   assert.equal(response.statusCode, 201);
   assert.equal(typeof (response.body as { token: string }).token, 'string');
@@ -123,6 +129,8 @@ test('login returns 401 when no user matches the email', async () => {
 
 test('login returns a cached session token when credentials match', async () => {
   const originalFindOne = UserModel.findOne;
+  const originalFindAccountData = AccountDataModel.findOne;
+  const originalCreateAccountData = AccountDataModel.create;
   const testUser = new UserModel({
     name: 'Jane Player',
     displayName: 'LuckyJane',
@@ -133,6 +141,14 @@ test('login returns a cached session token when credentials match', async () => 
   testUser.set('password', 'slotspin123');
 
   UserModel.findOne = (async () => testUser) as typeof UserModel.findOne;
+  AccountDataModel.findOne = (() => ({
+    lean: async () => ({
+      id: 'account-data-1'
+    })
+  })) as typeof AccountDataModel.findOne;
+  AccountDataModel.create = (async () => ({
+    id: 'account-data-1'
+  })) as unknown as typeof AccountDataModel.create;
 
   const response = createResponse();
 
@@ -147,6 +163,8 @@ test('login returns a cached session token when credentials match', async () => 
   );
 
   UserModel.findOne = originalFindOne;
+  AccountDataModel.findOne = originalFindAccountData;
+  AccountDataModel.create = originalCreateAccountData;
 
   assert.equal(response.statusCode, 200);
   assert.equal(

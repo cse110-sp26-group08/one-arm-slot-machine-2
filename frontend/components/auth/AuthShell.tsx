@@ -6,6 +6,7 @@ interface AuthShellProps {
   feedbackMessage: string;
   isSubmitting: boolean;
   mode: FormMode;
+  onLeaderboardOpen: () => void;
   onGuestEntry: () => void | Promise<void>;
   onModeChange: (mode: FormMode) => void;
 }
@@ -21,6 +22,7 @@ export function AuthShell({
   feedbackMessage,
   isSubmitting,
   mode,
+  onLeaderboardOpen,
   onGuestEntry,
   onModeChange
 }: AuthShellProps) {
@@ -81,6 +83,13 @@ export function AuthShell({
             type="button"
           >
             {isSubmitting ? 'Preparing lane...' : 'Play as guest'}
+          </button>
+          <button
+            className={`${styles.secondaryButton} ${styles.guestButton}`}
+            onClick={onLeaderboardOpen}
+            type="button"
+          >
+            View leaderboard
           </button>
         </div>
       </section>
