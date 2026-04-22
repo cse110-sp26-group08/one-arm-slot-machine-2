@@ -101,7 +101,11 @@ export function SlotMachineStats({
         <strong className={styles.statsValue}>{slotMachineState.stats.totalBalance}</strong>
       </div>
       <button
-        className={`${styles.spinButton} ${isSpinning ? styles.spinButtonBusy : ''}`}
+        className={[
+          styles.spinButton,
+          isSpinning ? styles.spinButtonBusy : '',
+          canSpin ? styles.spinButtonIdle : ''
+        ].join(' ')}
         disabled={!canSpin}
         onClick={() => {
           void handleButtonAction(onSpin);

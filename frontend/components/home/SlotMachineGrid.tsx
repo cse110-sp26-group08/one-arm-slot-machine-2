@@ -1,11 +1,16 @@
+import type { CSSProperties } from 'react';
+
 import styles from '../../pages/HomePage.module.css';
 import type { SlotMachineState } from '../../services/slot-machine-client.js';
+import { resolveNearMissPositionKeys, type SlotMachineAnimationState } from './animation-state.js';
 import { ReelCell } from './ReelCell.js';
 import type { SlotMachineTheme } from './slot-theme.js';
 
 interface SlotMachineGridProps {
+  animationState: SlotMachineAnimationState;
   displayedGrid: SlotMachineState['grid'];
   isSpinning: boolean;
+  settlingColumnIndexes: number[];
   slotMachineState: SlotMachineState;
   theme: SlotMachineTheme;
 }
@@ -17,8 +22,10 @@ interface SlotMachineGridProps {
  * @returns {JSX.Element} Slot-machine grid UI.
  */
 export function SlotMachineGrid({
+  animationState,
   displayedGrid,
   isSpinning,
+  settlingColumnIndexes,
   slotMachineState,
   theme
 }: SlotMachineGridProps) {
@@ -29,9 +36,20 @@ export function SlotMachineGrid({
         .map((rowIndex, columnIndex) => `${rowIndex}-${columnIndex}`)
     )
   );
+  const nearMissPositions =
+    animationState === 'near-miss'
+      ? new Set(resolveNearMissPositionKeys(displayedGrid))
+      : new Set<string>();
+  const isBigWinAnimation = animationState === 'big-win' || animationState === 'jackpot';
 
   return (
-    <section className={styles.machineFrame}>
+    <section
+      className={[
+        styles.machineFrame,
+        animationState === 'big-win' ? styles.machineFrameBigWin : '',
+        animationState === 'jackpot' ? styles.machineFrameJackpot : ''
+      ].join(' ')}
+    >
       <div className={styles.machineTopper}>
         {theme.jackpotLabels.map((jackpotLabel) => (
           <div className={styles.jackpotMeter} key={jackpotLabel.name}>
@@ -54,10 +72,34 @@ export function SlotMachineGrid({
         </div>
       </div>
       <div className={styles.reelCabinet}>
+        {isBigWinAnimation ? (
+          <div className={styles.coinBurst} aria-hidden="true">
+            {Array.from({ length: animationState === 'jackpot' ? 18 : 10 }, (_, index) => (
+              <span
+                className={styles.coinBurstPiece}
+                key={`coin-${index}`}
+                style={
+                  {
+                    animationDelay: `${index * 80}ms`,
+                    left: `${8 + ((index * 9) % 80)}%`
+                  } satisfies CSSProperties
+                }
+              />
+            ))}
+          </div>
+        ) : null}
+        {animationState === 'jackpot' ? (
+          <div className={styles.cannonBlastLayer} aria-hidden="true">
+            <span className={styles.cannonBlast} />
+            <span className={styles.cannonBlast} />
+          </div>
+        ) : null}
         <div className={styles.reelMatrix}>
           {displayedGrid.flatMap((row, rowIndex) =>
             row.map((symbol, columnIndex) => (
               <ReelCell
+                isNearMiss={!isSpinning && nearMissPositions.has(`${rowIndex}-${columnIndex}`)}
+                isSettling={settlingColumnIndexes.includes(columnIndex)}
                 isSpinning={isSpinning}
                 isWinning={!isSpinning && winningPositions.has(`${rowIndex}-${columnIndex}`)}
                 key={`${rowIndex}-${columnIndex}-${symbol}`}
@@ -75,13 +117,19 @@ export function SlotMachineGrid({
           <span className={styles.metaValue}>Five paylines cross the deck from left to right.</span>
         </div>
         <div className={styles.metaBlock}>
-          <span className={styles.metaLabel}>Captain's rules</span>
-          <span className={styles.metaValue}>Three matches cash out. The wild compass stands in for any icon.</span>
+          <span className={styles.metaLabel}>Captain&apos;s rules</span>
+          <span className={styles.metaValue}>
+            Three matches cash out. The wild compass stands in for any icon.
+          </span>
         </div>
         <div className={styles.metaBlock}>
           <span className={styles.metaLabel}>Sea state</span>
           <span className={styles.metaValue}>
-            {isSpinning ? 'The reels pitch and settle one mast at a time.' : 'Lantern glow holds the wheel at the center of the deck.'}
+            {isSpinning
+              ? 'The reels pitch and settle one mast at a time.'
+              : animationState === 'near-miss'
+                ? 'The crew nearly struck gold. The first matches still glow on the deck.'
+                : 'Lantern glow holds the wheel at the center of the deck.'}
           </span>
         </div>
       </div>

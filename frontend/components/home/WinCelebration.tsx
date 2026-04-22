@@ -1,11 +1,13 @@
 import type { CSSProperties } from 'react';
 
 import styles from '../../pages/HomePage.module.css';
+import type { SlotMachineAnimationState } from './animation-state.js';
 import type { ConfettiParticle } from './celebration.js';
 import type { WinCelebrationTheme } from '../../services/slot-machine-client.js';
 
 interface WinCelebrationProps {
   announcement: string;
+  animationTier: Extract<SlotMachineAnimationState, 'win' | 'big-win' | 'jackpot'>;
   confettiParticles: ConfettiParticle[];
   isVisible: boolean;
   onDismiss: () => void;
@@ -20,6 +22,7 @@ interface WinCelebrationProps {
  */
 export function WinCelebration({
   announcement,
+  animationTier,
   confettiParticles,
   isVisible,
   onDismiss,
@@ -30,7 +33,16 @@ export function WinCelebration({
   }
 
   return (
-    <div className={styles.celebrationOverlay} role="dialog" aria-live="polite" aria-modal="true">
+    <div
+      className={[
+        styles.celebrationOverlay,
+        animationTier === 'big-win' ? styles.celebrationOverlayBigWin : '',
+        animationTier === 'jackpot' ? styles.celebrationOverlayJackpot : ''
+      ].join(' ')}
+      role="dialog"
+      aria-live="polite"
+      aria-modal="true"
+    >
       <div className={styles.celebrationConfetti} aria-hidden="true">
         {confettiParticles.map((particle, index) => {
           const particleStyle: CSSProperties & Record<'--confetti-drift', string> = {
@@ -53,6 +65,20 @@ export function WinCelebration({
           );
         })}
       </div>
+      <div className={styles.celebrationCoins} aria-hidden="true">
+        {Array.from({ length: animationTier === 'jackpot' ? 16 : 8 }, (_, index) => (
+          <span
+            className={styles.celebrationCoin}
+            key={`celebration-coin-${index}`}
+            style={
+              {
+                animationDelay: `${index * 90}ms`,
+                left: `${10 + ((index * 7) % 76)}%`
+              } as CSSProperties
+            }
+          />
+        ))}
+      </div>
       <div className={styles.celebrationShipScene} aria-hidden="true">
         <div className={styles.celebrationWave} />
         <div className={styles.celebrationShip}>
@@ -60,6 +86,12 @@ export function WinCelebration({
           <span className={styles.shipHull} />
         </div>
       </div>
+      {animationTier === 'jackpot' ? (
+        <div className={styles.celebrationCannons} aria-hidden="true">
+          <span className={styles.celebrationCannonLeft} />
+          <span className={styles.celebrationCannonRight} />
+        </div>
+      ) : null}
       <div className={styles.celebrationCard}>
         <p className={styles.celebrationEyebrow}>Jackpot lights</p>
         <h2 className={styles.celebrationTitle}>You win!</h2>

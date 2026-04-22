@@ -1,5 +1,9 @@
 import { useEffect, useRef, useState, type MutableRefObject } from 'react';
 
+import {
+  resolveSlotMachineAnimationState,
+  resolveWinAnimationTier
+} from '../components/home/animation-state.js';
 import { createCelebrationParticles, getWinAnnouncement } from '../components/home/celebration.js';
 import { SlotMachineGrid } from '../components/home/SlotMachineGrid.js';
 import { SlotMachineStats } from '../components/home/SlotMachineStats.js';
@@ -42,6 +46,7 @@ interface HomePageProps {
 const previewSymbols: SlotSymbol[] = ['seven', 'diamond', 'bar', 'cherry', 'bell', 'horseshoe', 'wild'];
 const revealDelayInMilliseconds = 190;
 const celebrationDurationInMilliseconds = 3400;
+const settleAnimationDurationInMilliseconds = 420;
 
 /**
  * Home page containing the connected slot-machine experience.
@@ -60,6 +65,7 @@ export function HomePage({
   const [displayedGrid, setDisplayedGrid] = useState<SlotMachineState['grid'] | null>(null);
   const [isSpinning, setIsSpinning] = useState(false);
   const [isUpdatingBet, setIsUpdatingBet] = useState(false);
+  const [settlingColumnIndexes, setSettlingColumnIndexes] = useState<number[]>([]);
   const [audioSettings, setAudioSettings] = useState<AudioSettings>(() => loadAudioSettings());
   const [statusMessage, setStatusMessage] = useState(
     'The pirate deck is loaded. Five treasure lines are ready whenever you spin.'
@@ -69,6 +75,9 @@ export function HomePage({
   const celebrationTimeoutRef = useRef<number | null>(null);
   const celebrationTheme = slotMachineState?.winCelebrationTheme ?? 'classic';
   const celebrationParticles = createCelebrationParticles(celebrationTheme);
+  const animationState = slotMachineState
+    ? resolveSlotMachineAnimationState(slotMachineState, isSpinning)
+    : 'idle';
   const ownedSoundtrackIds = slotMachineState?.prizes.ownedSoundtrackIds ?? [];
   const unlockedSoundtrackOptions = getSoundtrackOptions().filter(
     (soundtrackOption) =>
@@ -123,6 +132,7 @@ export function HomePage({
     const currentState = await fetchSlotMachineState();
     setSlotMachineState(currentState);
     setDisplayedGrid(currentState.grid);
+    setSettlingColumnIndexes([]);
     onStateBalanceChange(currentState.stats.totalBalance);
   }
 
@@ -151,6 +161,7 @@ export function HomePage({
       for (let columnIndex = 0; columnIndex < nextState.grid[0].length; columnIndex += 1) {
         await pause(revealDelayInMilliseconds);
         setDisplayedGrid((currentGrid) => replaceGridColumn(currentGrid ?? nextState.grid, nextState.grid, columnIndex));
+        triggerSettlingColumnAnimation(columnIndex, setSettlingColumnIndexes);
       }
 
       setSlotMachineState(nextState);
@@ -239,14 +250,17 @@ export function HomePage({
     <main className={styles.pageShell}>
       <WinCelebration
         announcement={winAnnouncement}
+        animationTier={slotMachineState ? resolveWinAnimationTier(slotMachineState) : 'win'}
         confettiParticles={celebrationParticles}
         isVisible={isCelebratingWin}
         onDismiss={dismissCelebration}
         theme={celebrationTheme}
       />
       <SlotMachineGrid
+        animationState={animationState}
         displayedGrid={displayedGrid}
         isSpinning={isSpinning}
+        settlingColumnIndexes={settlingColumnIndexes}
         slotMachineState={slotMachineState}
         theme={pirateTreasureTheme}
       />
@@ -308,6 +322,29 @@ function createPreviewGrid(): SlotMachineState['grid'] {
       () => previewSymbols[Math.floor(Math.random() * previewSymbols.length)]
     )
   );
+}
+
+/**
+ * Marks a reel column as settling so the final stop can bounce into place.
+ *
+ * @param {number} columnIndex - Revealed reel column.
+ * @param {(value: number[] | ((currentColumns: number[]) => number[])) => void} setSettlingColumnIndexes - Settling column setter.
+ */
+function triggerSettlingColumnAnimation(
+  columnIndex: number,
+  setSettlingColumnIndexes: (
+    value: number[] | ((currentColumns: number[]) => number[])
+  ) => void
+) {
+  setSettlingColumnIndexes((currentColumns) =>
+    currentColumns.includes(columnIndex) ? currentColumns : [...currentColumns, columnIndex]
+  );
+
+  window.setTimeout(() => {
+    setSettlingColumnIndexes((currentColumns) =>
+      currentColumns.filter((currentColumnIndex) => currentColumnIndex !== columnIndex)
+    );
+  }, settleAnimationDurationInMilliseconds);
 }
 
 /**
