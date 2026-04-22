@@ -23,20 +23,28 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
-      - name: Convert README to index.html
+      - name: Generate index.html from README
         run: |
-          # 1. Remove the original index.html so it doesn't take priority
-          rm -f index.html 
+          # Remove original index.html
+          rm -f index.html
           
-          # 2. Use Pandoc (built-in on GitHub Runners) to convert README to index.html
-          # This ensures there is a real .html file for the server to find.
-          pandoc README.md -s -o index.html --metadata title="Project README"
+          # Rename README to index.md (Jekyll will convert this automatically)
+          mv README.md index.md
+          
+          # Create a configuration file to tell Jekyll to process the markdown
+          echo "theme: jekyll-theme-minimal" > _config.yml
+          echo "title: One Arm Slot Machine 2" >> _config.yml
+
+      - name: Build with Jekyll
+        uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./
+          destination: ./_site
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # This uploads the current directory containing our new index.html
-          path: '.'
+          path: './_site'
 
       - name: Deploy to GitHub Pages
         id: deployment
