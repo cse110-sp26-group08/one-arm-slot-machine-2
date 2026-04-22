@@ -73,7 +73,27 @@ We employed a parallel AI-driven workflow: created well-specified GitHub issues,
 
 ---
 
-## 7. Key Design Decisions
+## 7. Testing & Quality Assurance
+
+**Test Coverage**
+
+We implemented comprehensive test suites across backend and frontend:
+
+- **Backend Tests:** Authentication flows, controller logic, data models, game mechanics validation, and input validator rules
+- **Frontend Tests:** Animation state management, audio settings, authentication components, celebration effects, leaderboard displays, client services, icon rendering, and theme system
+
+**Continuous Integration & Code Quality**
+
+GitHub Actions workflows enforce code quality on every push and pull request:
+
+- **ESLint Workflow:** Automated linting and typechecking on all code changes (runs on main branch pushes, pull requests, and weekly schedule). Validates code style, best practices, and TypeScript type safety across the entire codebase using Node.js v22
+- **Frontend Linting Workflow:** Dedicated frontend linting and typechecking that runs on pull requests and main branch pushes. Ensures React component code quality, consistent formatting, and type correctness. Automatically fails the build if linting or typecheck errors are detected, preventing problematic code from being merged
+
+Both workflows use npm caching for fast feedback loops and standardized Node.js v22 environment. These automated quality gates ensure consistent code standards, prevent regressions, and maintain the long-term maintainability of the codebase.
+
+---
+
+## 8. Key Design Decisions
 
 **Psychological Engagement:** Volatility balance (frequent small wins + rare big payouts), strategically placed near-misses, audio reinforcement, quick loss transitions, delayed reel stopping for tension.
 
@@ -83,7 +103,7 @@ We employed a parallel AI-driven workflow: created well-specified GitHub issues,
 
 ---
 
-## 8. Results & Achievements
+## 9. Results & Achievements
 
 **Project Completion:**
 
@@ -100,7 +120,7 @@ We employed a parallel AI-driven workflow: created well-specified GitHub issues,
 
 ---
 
-## 9. Technical Learnings
+## 10. Technical Learnings
 
 **AI-Driven Development:** Parallel task execution dramatically reduced development time; detailed specifications (AGENTS.md, issue templates) were critical for agent effectiveness; Playwright automation enabled continuous visual verification.
 
@@ -110,7 +130,7 @@ We employed a parallel AI-driven workflow: created well-specified GitHub issues,
 
 ---
 
-## 10. Future Roadmap
+## 11. Future Roadmap
 
 **Short-term:** Progressive levels, weekly challenges, advanced cosmetic shop, friend gifting, mobile app
 
