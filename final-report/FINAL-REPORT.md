@@ -91,6 +91,8 @@ GitHub Actions workflows enforce code quality on every push and pull request:
 
 Both workflows use npm caching for fast feedback loops and standardized Node.js v22 environment. These automated quality gates ensure consistent code standards, prevent regressions, and maintain the long-term maintainability of the codebase.
 
+![GitHub Lint Checks Status](./lint-checks.png)
+
 ---
 
 ## 8. Key Design Decisions
