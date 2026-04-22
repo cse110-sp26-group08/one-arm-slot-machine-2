@@ -577,6 +577,39 @@
   transform: translateY(-50%);
 }
 
+.audioDock {
+  grid-column: 1 / span 2;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.audioControl {
+  display: grid;
+  gap: 6px;
+}
+
+.audioControlRow {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+}
+
+.audioMuteButton {
+  min-height: 34px;
+  padding: 0 12px;
+  border: 2px solid rgba(232, 185, 90, 0.92);
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(33, 94, 103, 0.98), rgba(12, 48, 56, 0.98));
+  color: #ffeab6;
+}
+
+.volumeSlider {
+  width: 100%;
+  accent-color: #71f0e3;
+}
+
 .betControl {
   display: inline-flex;
   align-items: center;
@@ -645,6 +678,7 @@
 
 .spinButton,
 .exitButton,
+.audioMuteButton,
 .betInput,
 .celebrationButton {
   cursor: pointer;
@@ -653,6 +687,7 @@
 
 .spinButton:hover,
 .exitButton:hover,
+.audioMuteButton:hover,
 .betInput:hover,
 .celebrationButton:hover {
   transform: translateY(-1px);
@@ -814,6 +849,7 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .audioDock,
   .spinButton,
   .compassColumn,
   .exitButton,
@@ -860,6 +896,10 @@
 
   .machineMeta,
   .machineTopper {
+    grid-template-columns: 1fr;
+  }
+
+  .audioDock {
     grid-template-columns: 1fr;
   }
 }

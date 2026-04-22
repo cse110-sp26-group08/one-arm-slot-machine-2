@@ -5,7 +5,19 @@ import { SlotMachineGrid } from '../components/home/SlotMachineGrid.js';
 import { SlotMachineStats } from '../components/home/SlotMachineStats.js';
 import { WinCelebration } from '../components/home/WinCelebration.js';
 import { pirateTreasureTheme } from '../components/home/slot-theme.js';
-import { playWinJingle } from '../services/celebration-audio.js';
+import {
+  clampAudioVolume,
+  initializePirateAudio,
+  loadAudioSettings,
+  playButtonTapSound,
+  playLossSound,
+  playWinJingle,
+  saveAudioSettings,
+  startWheelSpinSound,
+  stopWheelSpinSound,
+  syncPirateAudioSettings,
+  type AudioSettings
+} from '../services/celebration-audio.js';
 import {
   fetchSlotMachineState,
   spinSlotMachine,
@@ -45,6 +57,7 @@ export function HomePage({
   const [displayedGrid, setDisplayedGrid] = useState<SlotMachineState['grid'] | null>(null);
   const [isSpinning, setIsSpinning] = useState(false);
   const [isUpdatingBet, setIsUpdatingBet] = useState(false);
+  const [audioSettings, setAudioSettings] = useState<AudioSettings>(() => loadAudioSettings());
   const [statusMessage, setStatusMessage] = useState(
     'The pirate deck is loaded. Five treasure lines are ready whenever you spin.'
   );
@@ -57,6 +70,27 @@ export function HomePage({
   useEffect(() => {
     void hydrateSlotMachineState();
   }, []);
+
+  useEffect(() => {
+    saveAudioSettings(audioSettings);
+    syncPirateAudioSettings(audioSettings);
+  }, [audioSettings]);
+
+  useEffect(() => {
+    const activateAudio = () => {
+      void initializePirateAudio(audioSettings);
+      window.removeEventListener('pointerdown', activateAudio);
+      window.removeEventListener('keydown', activateAudio);
+    };
+
+    window.addEventListener('pointerdown', activateAudio);
+    window.addEventListener('keydown', activateAudio);
+
+    return () => {
+      window.removeEventListener('pointerdown', activateAudio);
+      window.removeEventListener('keydown', activateAudio);
+    };
+  }, [audioSettings]);
 
   function dismissCelebration() {
     clearCelebration(celebrationTimeoutRef, setIsCelebratingWin);
@@ -83,11 +117,16 @@ export function HomePage({
     }
 
     dismissCelebration();
+    await initializePirateAudio(audioSettings);
     setIsSpinning(true);
     setStatusMessage('The reels are rolling through the tide and will settle from port to starboard.');
     const previewInterval = window.setInterval(() => {
       setDisplayedGrid(createPreviewGrid());
     }, 90);
+    const expectedSpinDuration =
+      nextRevealDurationInMilliseconds((displayedGrid[0]?.length ?? 3), revealDelayInMilliseconds) +
+      220;
+    await startWheelSpinSound(expectedSpinDuration);
 
     try {
       const nextState = await spinSlotMachine();
@@ -108,7 +147,7 @@ export function HomePage({
         const announcement = getWinAnnouncement(nextState);
         setWinAnnouncement(announcement);
         setIsCelebratingWin(true);
-        void playWinJingle();
+        await playWinJingle(nextState);
 
         if (celebrationTimeoutRef.current) {
           window.clearTimeout(celebrationTimeoutRef.current);
@@ -118,12 +157,15 @@ export function HomePage({
           celebrationTimeoutRef.current = null;
           setIsCelebratingWin(false);
         }, celebrationDurationInMilliseconds);
+      } else {
+        await playLossSound();
       }
     } catch (error) {
       setStatusMessage(resolveActionErrorMessage(error, 'Spin could not start.'));
       await hydrateSlotMachineState();
     } finally {
       window.clearInterval(previewInterval);
+      stopWheelSpinSound();
       setIsSpinning(false);
     }
   }
@@ -148,6 +190,11 @@ export function HomePage({
     } finally {
       setIsUpdatingBet(false);
     }
+  }
+
+  async function handleButtonTap() {
+    await initializePirateAudio(audioSettings);
+    await playButtonTapSound();
   }
 
   if (!slotMachineState || !displayedGrid) {
@@ -177,12 +224,40 @@ export function HomePage({
         theme={pirateTreasureTheme}
       />
       <SlotMachineStats
+        audioSettings={audioSettings}
         isUpdatingBet={isUpdatingBet}
         isSpinning={isSpinning}
         onBetAmountChange={handleBetAmountChange}
+        onMusicMuteToggle={() => {
+          setAudioSettings((currentSettings) => ({
+            ...currentSettings,
+            musicMuted: !currentSettings.musicMuted
+          }));
+        }}
+        onMusicVolumeChange={(nextVolume) => {
+          setAudioSettings((currentSettings) => ({
+            ...currentSettings,
+            musicVolume: clampAudioVolume(nextVolume),
+            musicMuted: false
+          }));
+        }}
         onOpenPrizePage={() => onOpenPrizePage(slotMachineState.stats.totalBalance)}
         onOpenLeaderboard={() => onOpenLeaderboard(slotMachineState.stats.totalBalance)}
         onLogout={onLogout}
+        onPlayButtonSound={handleButtonTap}
+        onSoundEffectsMuteToggle={() => {
+          setAudioSettings((currentSettings) => ({
+            ...currentSettings,
+            soundEffectsMuted: !currentSettings.soundEffectsMuted
+          }));
+        }}
+        onSoundEffectsVolumeChange={(nextVolume) => {
+          setAudioSettings((currentSettings) => ({
+            ...currentSettings,
+            soundEffectsVolume: clampAudioVolume(nextVolume),
+            soundEffectsMuted: false
+          }));
+        }}
         onSpin={handleSpin}
         slotMachineState={slotMachineState}
         statusMessage={statusMessage}
@@ -254,6 +329,20 @@ function pause(durationInMilliseconds: number) {
   return new Promise<void>((resolve) => {
     window.setTimeout(resolve, durationInMilliseconds);
   });
+}
+
+/**
+ * Returns the rough spin-sound duration based on the column reveal cadence.
+ *
+ * @param {number} columnCount - Number of reel columns.
+ * @param {number} revealDelayPerColumnInMilliseconds - Delay between column reveals.
+ * @returns {number} Expected spin duration.
+ */
+function nextRevealDurationInMilliseconds(
+  columnCount: number,
+  revealDelayPerColumnInMilliseconds: number
+) {
+  return columnCount * revealDelayPerColumnInMilliseconds;
 }
 
 /**

@@ -1,15 +1,22 @@
 import { useEffect, useState } from 'react';
 
 import styles from '../../pages/HomePage.module.css';
+import type { AudioSettings } from '../../services/celebration-audio.js';
 import type { SlotMachineState } from '../../services/slot-machine-client.js';
 
 interface SlotMachineStatsProps {
+  audioSettings: AudioSettings;
   isUpdatingBet: boolean;
   isSpinning: boolean;
   onBetAmountChange: (nextBetAmount: number) => void | Promise<void>;
+  onMusicMuteToggle: () => void | Promise<void>;
+  onMusicVolumeChange: (nextVolume: number) => void | Promise<void>;
   onOpenLeaderboard: () => void;
   onOpenPrizePage: () => void;
   onLogout: () => void;
+  onPlayButtonSound: () => void | Promise<void>;
+  onSoundEffectsMuteToggle: () => void | Promise<void>;
+  onSoundEffectsVolumeChange: (nextVolume: number) => void | Promise<void>;
   onSpin: () => void | Promise<void>;
   statusMessage: string;
   slotMachineState: SlotMachineState;
@@ -23,12 +30,18 @@ interface SlotMachineStatsProps {
  * @returns {JSX.Element} Stats and controls UI.
  */
 export function SlotMachineStats({
+  audioSettings,
   isUpdatingBet,
   isSpinning,
   onBetAmountChange,
+  onMusicMuteToggle,
+  onMusicVolumeChange,
   onOpenLeaderboard,
   onOpenPrizePage,
   onLogout,
+  onPlayButtonSound,
+  onSoundEffectsMuteToggle,
+  onSoundEffectsVolumeChange,
   onSpin,
   statusMessage,
   slotMachineState,
@@ -68,6 +81,11 @@ export function SlotMachineStats({
     await onBetAmountChange(parsedBetAmount);
   }
 
+  async function handleButtonAction(action: () => void | Promise<void>) {
+    await onPlayButtonSound();
+    await action();
+  }
+
   return (
     <section className={styles.statsBar}>
       <div className={styles.statsColumn}>
@@ -81,7 +99,9 @@ export function SlotMachineStats({
       <button
         className={`${styles.spinButton} ${isSpinning ? styles.spinButtonBusy : ''}`}
         disabled={!canSpin}
-        onClick={() => void onSpin()}
+        onClick={() => {
+          void handleButtonAction(onSpin);
+        }}
         type="button"
       >
         {isSpinning ? 'Spinning...' : 'Spin'}
@@ -130,15 +150,85 @@ export function SlotMachineStats({
         <span className={styles.statsLabel}>Number of spins</span>
         <strong className={styles.statsValue}>{slotMachineState.stats.numberOfSpins}</strong>
       </div>
-      <button className={styles.exitButton} onClick={onLogout} type="button">
+      <button
+        className={styles.exitButton}
+        onClick={() => {
+          void handleButtonAction(onLogout);
+        }}
+        type="button"
+      >
         Exit floor
       </button>
-      <button className={styles.exitButton} onClick={onOpenLeaderboard} type="button">
+      <button
+        className={styles.exitButton}
+        onClick={() => {
+          void handleButtonAction(onOpenLeaderboard);
+        }}
+        type="button"
+      >
         Leaderboard
       </button>
-      <button className={styles.exitButton} onClick={onOpenPrizePage} type="button">
+      <button
+        className={styles.exitButton}
+        onClick={() => {
+          void handleButtonAction(onOpenPrizePage);
+        }}
+        type="button"
+      >
         Prize vault
       </button>
+      <div className={styles.audioDock}>
+        <div className={styles.audioControl}>
+          <span className={styles.statsLabel}>Music</span>
+          <div className={styles.audioControlRow}>
+            <button
+              className={styles.audioMuteButton}
+              onClick={() => {
+                void handleButtonAction(onMusicMuteToggle);
+              }}
+              type="button"
+            >
+              {audioSettings.musicMuted ? 'Unmute' : 'Mute'}
+            </button>
+            <input
+              aria-label="Music volume"
+              className={styles.volumeSlider}
+              max="100"
+              min="0"
+              onChange={(event) => {
+                void onMusicVolumeChange(Number(event.target.value) / 100);
+              }}
+              type="range"
+              value={Math.round(audioSettings.musicVolume * 100)}
+            />
+          </div>
+        </div>
+        <div className={styles.audioControl}>
+          <span className={styles.statsLabel}>Sound effects</span>
+          <div className={styles.audioControlRow}>
+            <button
+              className={styles.audioMuteButton}
+              onClick={() => {
+                void handleButtonAction(onSoundEffectsMuteToggle);
+              }}
+              type="button"
+            >
+              {audioSettings.soundEffectsMuted ? 'Unmute' : 'Mute'}
+            </button>
+            <input
+              aria-label="Sound effects volume"
+              className={styles.volumeSlider}
+              max="100"
+              min="0"
+              onChange={(event) => {
+                void onSoundEffectsVolumeChange(Number(event.target.value) / 100);
+              }}
+              type="range"
+              value={Math.round(audioSettings.soundEffectsVolume * 100)}
+            />
+          </div>
+        </div>
+      </div>
       <div className={styles.statusBanner}>{statusMessage}</div>
     </section>
   );
