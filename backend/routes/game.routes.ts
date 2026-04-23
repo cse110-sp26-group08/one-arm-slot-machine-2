@@ -13,6 +13,9 @@ import {
   validateUpdateGame
 } from '../validators/game.validator.js';
 
+/**
+ * Express router exposing CRUD endpoints for stored game-history records.
+ */
 export const gameRouter = Router();
 
 gameRouter.get('/', listGames);
