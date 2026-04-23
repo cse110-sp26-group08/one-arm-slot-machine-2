@@ -33,6 +33,14 @@ We developed two key personas to guide design decisions: **Joy**, a high school 
 
 We employed an AI-driven, parallelized development strategy: equipped Codex with Playwright browser automation, GitHub integration for PR creation, and detailed AGENTS.md specifications. Created well-specified GitHub issues for each feature, assigned multiple tasks simultaneously for parallel execution, and leveraged AI-generated pull requests with comprehensive documentation and testing. Used GPT-5.4 with medium reasoning for optimal balance between speed and accuracy.
 
+**Strategy Evolution:**
+
+- **Initial Phase:** Focused on well-specified GitHub issues with AI-generated PRs for backend setup and core features
+- **Log #4 Onward:** Encountered code modularization challenges; had to explicitly emphasize single-responsibility principles and file organization through iterative prompting
+- **Log #11 Onward:** Increased bug frequency required pivoting to a bug-focused strategy before resuming feature development
+- **Log #15 Onward:** Discovered limitation with asset dependency retrieval; team manually sourced animations and images rather than relying on AI to acquire these resources
+- **Key Learning:** Detailed specifications alone were insufficient; iterative refinement and explicit architectural reminders were necessary for optimal code quality
+
 ---
 
 ## 4. Primary Objectives
