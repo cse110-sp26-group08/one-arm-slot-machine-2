@@ -13,6 +13,9 @@ import {
   validateUpdateUser
 } from '../validators/user.validator.js';
 
+/**
+ * Express router exposing CRUD endpoints for user profile records.
+ */
 export const userRouter = Router();
 
 userRouter.get('/', listUsers);

@@ -8,6 +8,9 @@ import {
   updateSlotMachineBetAmountController
 } from '../controllers/slot-machine.controller.js';
 
+/**
+ * Express router for the connected slot-machine gameplay and prize endpoints.
+ */
 export const slotMachineRouter = Router();
 
 slotMachineRouter.get('/state', getCurrentSlotMachineState);
