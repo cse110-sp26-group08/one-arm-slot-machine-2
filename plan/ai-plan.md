@@ -1,3 +1,19 @@
+# AI tool, model, and harness
+
+- **AI:** Codex
+- **Model** Medium Reasoning
+- **Harness:** Codex App
+
+## Why Codex, Medium Reasoning, and Codex App?
+
+**Codex:** Chosen for its specialized development capabilities, extensive skill library (Playwright for browser automation, GitHub integration for PR management), and ability to understand and execute complex code requirements. Unlike general-purpose LLMs, Codex is built specifically for code generation and task automation, making it ideal for our parallelized development workflow. Additionally, Codex provides free credits for students and competitive pricing, making it cost-effective for our project budget.
+
+**Medium Reasoning:** Balances speed and accuracy for our timeline and use case. Full reasoning mode would be slower but unnecessary for well-specified GitHub issues; basic mode would risk missing architectural considerations. Medium provides sufficient context understanding for generating quality PRs without excessive latency.
+
+**Codex App:** Served as the harness/interface allowing us to orchestrate multiple agents, manage skills, integrate with GitHub workflows, and maintain context across long development sessions. Provided necessary infrastructure for parallel task execution and automated PR generation that wasn't feasible with standard CLI tools.
+
+---
+
 # Initial strategy we are employing
 
 - We equippied Codex with the Playwright and frontend skills to allow for it to check what its doing with a browser.
