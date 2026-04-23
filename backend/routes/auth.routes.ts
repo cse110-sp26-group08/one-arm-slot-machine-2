@@ -11,6 +11,9 @@ import {
   validateSignupRequest
 } from '../validators/auth.validator.js';
 
+/**
+ * Express router for signup, login, guest login, and session restoration endpoints.
+ */
 export const authRouter = Router();
 
 authRouter.post('/signup', validateSignupRequest, signup);

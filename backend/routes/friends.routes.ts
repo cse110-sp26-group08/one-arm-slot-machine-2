@@ -13,6 +13,9 @@ import {
   validateUpdateFriends
 } from '../validators/friends.validator.js';
 
+/**
+ * Express router exposing CRUD endpoints for user friend-list documents.
+ */
 export const friendsRouter = Router();
 
 friendsRouter.get('/', listFriendsLists);

@@ -13,6 +13,9 @@ import {
   validateUpdateAccountData
 } from '../validators/account-data.validator.js';
 
+/**
+ * Express router exposing CRUD endpoints for persisted account-data records.
+ */
 export const accountDataRouter = Router();
 
 accountDataRouter.get('/', listAccountData);

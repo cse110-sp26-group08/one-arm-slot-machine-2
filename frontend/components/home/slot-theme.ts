@@ -1,11 +1,17 @@
 import type { SlotSymbol } from '../../services/slot-machine-client.js';
 
+/**
+ * Render metadata for a single slot symbol in the active machine theme.
+ */
 export interface SlotSymbolDisplay {
   alt: string;
   assetUrl?: string;
   emblemText?: string;
 }
 
+/**
+ * Visual theme contract for a slot-machine cabinet and its symbol art.
+ */
 export interface SlotMachineTheme {
   accentLabel: string;
   jackpotLabels: Array<{
@@ -17,8 +23,17 @@ export interface SlotMachineTheme {
   symbolDisplayMap: Record<SlotSymbol, SlotSymbolDisplay>;
 }
 
+/**
+ * Resolves a bundled static asset URL relative to this theme module.
+ *
+ * @param {string} relativePath - Relative asset path under the repo asset folder.
+ * @returns {string} Browser-ready asset URL.
+ */
 const resolveAssetUrl = (relativePath: string) => new URL(relativePath, import.meta.url).href;
 
+/**
+ * Pirate-themed reel art and cabinet copy used by the connected home slot machine.
+ */
 export const pirateTreasureTheme: SlotMachineTheme = {
   machineName: 'Blackwater Bounty',
   accentLabel: 'Treasure deck',
