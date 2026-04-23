@@ -326,3 +326,14 @@ can you update the login page to be more like the pirate theme. change the symbo
 Codex did this well and we do not have any qualms with it. Looks like we have our final product!
 
 <hr />
+
+### Log #25
+
+#### Prompt:
+
+You have documentation for every .tsx file, but the ordinary type script files, can you add documentaton to the ordinary type script files. then raise a pr for the changes
+
+#### Thoughts
+We found out that on typescript files, the model never used jsdocs for documentation, so we decided to prompt codex one last time to get this documentation.
+
+<hr />

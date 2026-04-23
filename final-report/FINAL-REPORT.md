@@ -4,6 +4,42 @@
 
 ---
 
+# IMPORTANT commit hashes for Audria
+These are commits where code was made by codex by somehow got updated on github that we commited them. These should be viewed as commits by codex
+- e96927b
+- d516a1f
+- 72aba11
+- 5c581ca
+- f810086
+- 6a2246c
+- f9125fc
+- 3b87848
+- 2e62d29
+- c1d2474
+- 76c2bc9
+- 6cdc3fb
+- 3369cfb
+- cf9190e
+- 0c8d216
+- 78e03a9
+- f32253e
+- 57a9e45
+- fe9cb5e
+- 02754a6
+- 7ba7a6f
+- 824cb59
+- 4736857
+- fec91da
+- a30c71a
+- 3e4c28e
+- 6b7b564
+- f86c5ff
+- 68595d1
+- e1e364e
+- 6d7965a
+- 4d6ca1b
+- 10315b2
+- aeb64df
 ## Executive Summary
 
 This report documents the complete development of **One-Arm Slot Machine II**, a fully-fledged pirate-themed slot machine website built using the MERN stack. The project successfully combined rigorous research, strategic AI-driven development, and user-centered design principles to create an engaging, accessible, and maintainable gaming platform.
