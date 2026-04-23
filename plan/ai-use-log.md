@@ -337,3 +337,15 @@ You have documentation for every .tsx file, but the ordinary type script files, 
 We found out that on typescript files, the model never used jsdocs for documentation, so we decided to prompt codex one last time to get this documentation.
 
 <hr />
+
+<hr />
+
+### Log #26
+
+#### Prompt:
+can you check if there is validating for html and css, and if not, can you add it?
+
+#### Thoughts
+We found out very late that our github action for validating html and css stopped working. We had codex fix it and recheck :D
+
+<hr />
