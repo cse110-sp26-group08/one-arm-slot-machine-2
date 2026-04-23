@@ -187,7 +187,7 @@
 
 .celebrationCannons {
   position: absolute;
-  inset: auto 0 22% 0;
+  inset: auto 0 22%;
   pointer-events: none;
 }
 
@@ -237,6 +237,7 @@
 
 .confettiParticle {
   --confetti-drift: 0px;
+
   position: absolute;
   top: -8%;
   border-radius: 999px;
@@ -248,6 +249,7 @@
 
 .snowParticle {
   --confetti-drift: 0px;
+
   position: absolute;
   top: -8%;
   border-radius: 999px;
@@ -912,6 +914,8 @@
   font-size: 1.05rem;
   font-weight: 700;
   text-align: center;
+  cursor: pointer;
+  transition: transform 160ms ease, box-shadow 160ms ease, filter 160ms ease;
 }
 
 .betInput:disabled {
@@ -987,7 +991,6 @@
 .spinButton,
 .exitButton,
 .audioMuteButton,
-.betInput,
 .celebrationButton {
   cursor: pointer;
   transition: transform 160ms ease, box-shadow 160ms ease, filter 160ms ease;
@@ -996,7 +999,7 @@
 .spinButton:hover,
 .exitButton:hover,
 .audioMuteButton:hover,
-.betInput:hover,
+.betInput:not(:disabled):hover,
 .celebrationButton:hover {
   transform: translateY(-1px);
   filter: brightness(1.05);

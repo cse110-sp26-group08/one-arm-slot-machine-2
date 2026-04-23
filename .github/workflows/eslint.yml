@@ -38,5 +38,11 @@ jobs:
       - name: Run ESLint
         run: npm run lint
 
+      - name: Validate CSS
+        run: npm run lint:css
+
+      - name: Validate HTML
+        run: npm run lint:html
+
       - name: Run TypeScript typecheck
         run: npm run typecheck
